@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIH Online Verification System</title>
+    
+    <!-- Preconnect to Google Fonts for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" as="style">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <style>
+      body {
+        background-color: #f9f9ff;
+        color: #191c1f;
+      }
+      .neu-flat {
+          background: #f9f9ff;
+          box-shadow: 6px 6px 12px #dce1eb, -6px -6px 12px #ffffff;
+          border-radius: 0.75rem;
+      }
+      .neu-extruded {
+          background: #f9f9ff;
+          box-shadow: 10px 10px 20px #dce1eb, -10px -10px 20px #ffffff;
+          border-radius: 0.75rem;
+      }
+      .neu-recessed {
+          background: #f9f9ff;
+          box-shadow: inset 4px 4px 8px #dce1eb, inset -4px -4px 8px #ffffff;
+          border-radius: 0.5rem;
+      }
+      .neu-button, .neu-btn {
+          background: #f9f9ff;
+          box-shadow: 4px 4px 8px #dce1eb, -4px -4px 8px #ffffff;
+          border-radius: 0.5rem;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border: none;
+          cursor: pointer;
+      }
+      .neu-button:hover, .neu-btn:hover {
+          box-shadow: 6px 6px 12px #dce1eb, -6px -6px 12px #ffffff;
+          transform: translateY(-1px);
+      }
+      .neu-button:active, .neu-btn:active {
+          box-shadow: inset 2px 2px 5px #dce1eb, inset -2px -2px 5px #ffffff;
+          transform: translateY(1px);
+      }
+      .neu-input-container {
+           box-shadow: inset 4px 4px 8px #dce1eb, inset -4px -4px 8px #ffffff;
+           background-color: #f9f9ff;
+      }
+      .neu-input {
+          background: transparent;
+          border: none;
+          box-shadow: none;
+      }
+      .neu-input:focus {
+          outline: none;
+          box-shadow: none;
+      }
+    </style>
+  </head>
+  <body class="bg-background text-on-surface antialiased overflow-x-hidden font-body-md">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

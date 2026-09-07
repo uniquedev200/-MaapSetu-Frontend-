@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface antialiased overflow-x-hidden font-body-md;
+  }
+}
+
+@layer utilities {
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-slide-up {
+    animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+
+/* Print: only render the marked .print-area, hide the app chrome
+   (sidebar, topbar, action bars, breadcrumbs). */
+@media print {
+  @page {
+    margin: 1.2cm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    box-shadow: none !important;
+  }
+}
+
