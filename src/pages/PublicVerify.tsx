@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { publicCertificateVerify, API_ORIGIN } from '../api';
+import { publicCertificateVerify, resolveFileUrl } from '../api';
 
 const EMPTY = {
   certificate: null as any,
@@ -37,7 +37,7 @@ export default function PublicVerify() {
   const authentic = auth.isAuthentic === true;
   const tampered = cert?.is_tampered === true;
   const blockNo = auth.blockNumber ?? '-';
-  const qrUrl = cert?.qr_code_url ? API_ORIGIN + cert.qr_code_url : null;
+  const qrUrl = resolveFileUrl(cert?.qr_code_url);
 
   const handleScan = () => {
     const value = scanInput.trim();

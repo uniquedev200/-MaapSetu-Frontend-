@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchCertificateDetails, downloadCertificatePdf, verifyCertificate, API_ORIGIN } from '../api';
+import { fetchCertificateDetails, downloadCertificatePdf, verifyCertificate, resolveFileUrl } from '../api';
 import { useToast } from '../components/ToastContext';
 
 export default function CertificateView() {
@@ -17,7 +17,7 @@ export default function CertificateView() {
     if (id) {
       fetchCertificateDetails(id).then((data) => {
         setCertData(data);
-        if (data.qr_code_url) setQrUrl(API_ORIGIN + data.qr_code_url);
+        if (data.qr_code_url) setQrUrl(resolveFileUrl(data.qr_code_url));
         setLoading(false);
       });
       verifyCertificate(id).then(setAuthenticity).catch(() => {});

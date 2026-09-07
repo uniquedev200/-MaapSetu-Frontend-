@@ -8,6 +8,14 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localho
 // (pdf_url / qr_code_url come back as /api/v1/public/file/... paths).
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
 
+// Stored-file URL resolver: DB rows hold either API-relative paths
+// (/api/v1/public/file/...) or absolute Supabase CDN URLs (when storage is
+// remote). Return absolute URLs as-is, prefix everything else with API_ORIGIN.
+export const resolveFileUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+  return /^https?:\/\//i.test(url) ? url : API_ORIGIN + url;
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {

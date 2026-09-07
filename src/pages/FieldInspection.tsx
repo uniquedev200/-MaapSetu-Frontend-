@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { submitInspectionFindings, scheduleVerification, fetchApplicationDetails, uploadFile, API_ORIGIN, mapsLink } from '../api';
+import { submitInspectionFindings, scheduleVerification, fetchApplicationDetails, uploadFile, resolveFileUrl, mapsLink } from '../api';
 import { useToast } from '../components/ToastContext';
 import { useAuth } from '../components/AuthContext';
 
@@ -352,7 +352,7 @@ export default function FieldInspection() {
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-md neu-recessed bg-white flex items-center justify-center text-primary overflow-hidden">
                     {file.url && /image/.test(file.name) ? (
-                      <img src={API_ORIGIN + file.url} alt={file.name} className="h-full w-full object-cover" />
+                      <img src={resolveFileUrl(file.url) ?? ''} alt={file.name} className="h-full w-full object-cover" />
                     ) : (
                       <span className="material-symbols-outlined text-[18px]">description</span>
                     )}
