@@ -19,6 +19,8 @@ export default function ConsumerScan() {
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
   const handledRef = useRef(false);
+  const startedRef = useRef(false);
+  const cameraOnRef = useRef(false);
 
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraError, setCameraError] = useState('');
@@ -30,12 +32,16 @@ export default function ConsumerScan() {
   const stopCamera = () => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
+    cameraOnRef.current = false;
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     setCameraOn(false);
   };
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    startCamera();
     return () => { handledRef.current = true; stopCamera(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -64,7 +70,7 @@ export default function ConsumerScan() {
         }
       }
     }
-    if (cameraOn && !handledRef.current) rafRef.current = requestAnimationFrame(tick);
+    if (cameraOnRef.current && !handledRef.current) rafRef.current = requestAnimationFrame(tick);
   };
 
   const startCamera = async () => {
@@ -76,6 +82,8 @@ export default function ConsumerScan() {
     }
     setScanning(true);
     try {
+      if (streamRef.current) streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
         audio: false,
@@ -85,6 +93,8 @@ export default function ConsumerScan() {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
+      cameraOnRef.current = true;
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       setCameraOn(true);
       rafRef.current = requestAnimationFrame(tick);
     } catch (err: any) {
@@ -163,25 +173,28 @@ export default function ConsumerScan() {
             {!cameraOn && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/90">
                 <span className="material-symbols-outlined text-5xl text-white/70" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
-                <p className="font-label-sm text-label-sm opacity-80">Camera preview appears here</p>
+                <p className="font-label-sm text-label-sm opacity-80">Camera is off — tap “Enable Camera Scan” below, or upload a photo.</p>
               </div>
             )}
             {cameraOn && (
-              <div className="pointer-events-none absolute inset-6 border-2 border-white/80 rounded-xl" />
+              <>
+                <div className="pointer-events-none absolute inset-6 border-2 border-white/80 rounded-xl" />
+                <div className="absolute top-4 inset-x-0 flex justify-center pointer-events-none">
+                  <span className="px-3 py-1 rounded-full bg-black/50 text-white/90 text-[11px] font-semibold tracking-wide flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
+                    Looking for QR … it verifies automatically when found
+                  </span>
+                </div>
+              </>
             )}
           </div>
           <canvas ref={canvasRef} className="hidden" />
 
           <div className="flex gap-3 mt-4">
-            {!cameraOn ? (
+            {!cameraOn && (
               <button onClick={startCamera} disabled={scanning} className="flex-1 py-3 rounded-xl font-label-lg text-label-lg text-primary font-bold neu-flat transition-all active:scale-95 hover:bg-primary-fixed/20 flex items-center justify-center gap-2 disabled:opacity-70">
                 <span className="material-symbols-outlined">{scanning ? 'sync' : 'photo_camera'}</span>
-                {scanning ? 'Starting camera...' : 'Start Camera Scan'}
-              </button>
-            ) : (
-              <button onClick={stopCamera} className="flex-1 py-3 rounded-xl font-label-lg text-label-lg text-error font-bold neu-flat transition-all active:scale-95 flex items-center justify-center gap-2">
-                <span className="material-symbols-outlined">stop_circle</span>
-                Stop Camera
+                {scanning ? 'Starting camera...' : (cameraError ? 'Try Camera Again' : 'Enable Camera Scan')}
               </button>
             )}
             <label className="flex-1 py-3 rounded-xl font-label-lg text-label-lg text-secondary font-bold neu-flat transition-all active:scale-95 hover:bg-primary-fixed/20 flex items-center justify-center gap-2 cursor-pointer">
