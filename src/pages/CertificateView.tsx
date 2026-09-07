@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchCertificateDetails, downloadCertificatePdf, verifyCertificate, resolveFileUrl } from '../api';
 import { useToast } from '../components/ToastContext';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function CertificateView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { t } = useLang();
   const [certData, setCertData] = useState<any>(null);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [authenticity, setAuthenticity] = useState<any>(null);
@@ -37,14 +39,14 @@ export default function CertificateView() {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error: any) {
-      showToast(error?.response?.data?.detail || 'Failed to download certificate.', 'error');
+      showToast(error?.response?.data?.detail || t('cert.failDownload'), 'error');
     } finally {
       setDownloading(false);
     }
   };
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center">Loading certificate...</div>;
+    return <div className="p-8 flex items-center justify-center">{t('cv.loading')}</div>;
   }
 
   return (
@@ -54,19 +56,19 @@ export default function CertificateView() {
         <div>
           <nav className="flex text-sm text-on-surface-variant mb-2">
             <ol className="flex items-center space-x-2">
-              <li><button onClick={() => navigate(-1)} className="hover:text-primary transition-colors">Back</button></li>
+              <li><button onClick={() => navigate(-1)} className="hover:text-primary transition-colors">{t('common.back')}</button></li>
               <li><span className="material-symbols-outlined text-sm">chevron_right</span></li>
-              <li className="text-primary font-medium">View Certificate</li>
+              <li className="text-primary font-medium">{t('cv.viewCertificate')}</li>
             </ol>
           </nav>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface">Digital Verification Certificate</h2>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface">{t('cv.title')}</h2>
         </div>
         <div className="flex gap-4">
           <button onClick={() => window.print()} className="neu-btn px-6 py-3 rounded-full flex items-center gap-2 text-primary font-label-lg text-label-lg hover:bg-primary/5 transition-colors">
-            <span className="material-symbols-outlined">print</span> Print
+            <span className="material-symbols-outlined">print</span> {t('cv.print')}
           </button>
           <button onClick={handleDownload} disabled={downloading} className="neu-btn px-6 py-3 rounded-full flex items-center gap-2 bg-primary/5 text-primary font-label-lg text-label-lg hover:bg-primary/10 transition-colors disabled:opacity-60">
-            <span className="material-symbols-outlined">{downloading ? 'sync' : 'download'}</span> {downloading ? 'Downloading...' : 'Download PDF'}
+            <span className="material-symbols-outlined">{downloading ? 'sync' : 'download'}</span> {downloading ? t('cv.downloading') : t('cv.download')}
           </button>
         </div>
       </div>
@@ -82,34 +84,34 @@ export default function CertificateView() {
           <div className="w-20 h-20 mx-auto neu-extruded rounded-full flex items-center justify-center mb-6 bg-surface-container-low text-primary">
             <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary uppercase tracking-widest mb-2">Certificate of Verification</h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant">Metrology Authority of Standards & Measures</p>
+          <h1 className="font-headline-lg text-headline-lg text-primary uppercase tracking-widest mb-2">{t('cv.certOfVerification')}</h1>
+          <p className="font-body-lg text-body-lg text-on-surface-variant">{t('cv.institution')}</p>
         </div>
 
         {/* Main Details */}
         <div className="w-full flex flex-col md:flex-row gap-12 mb-12 relative z-10">
           <div className="flex-1 space-y-8">
             <div>
-              <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Instrument Detail</p>
+              <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('cv.instrumentDetail')}</p>
               <p className="font-headline-md text-headline-md text-on-surface border-b-2 border-surface-dim pb-2 inline-block">{certData?.instrument_name}</p>
             </div>
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Serial Number</p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('cv.serialNumber')}</p>
                 <p className="font-body-lg text-body-lg text-on-surface font-code bg-surface-container-low px-3 py-1 rounded neu-recessed inline-block">{certData?.serial_number}</p>
               </div>
               <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Owner / Business</p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('cv.ownerBusiness')}</p>
                 <p className="font-body-lg text-body-lg text-on-surface font-medium">{certData?.business_name}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Issued Date</p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('cv.issuedDate')}</p>
                 <p className="font-body-lg text-body-lg text-on-surface">{certData?.issued_date}</p>
               </div>
               <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Valid Until</p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('cv.validUntil')}</p>
                 <p className="font-body-lg text-body-lg text-primary font-bold">{certData?.valid_until}</p>
               </div>
             </div>
@@ -117,12 +119,12 @@ export default function CertificateView() {
               <div className="neu-recessed p-4 rounded-xl">
                 <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary" style={authenticity.isAuthentic ? {} : undefined}>verified</span>
-                  Blockchain Authenticity
+                  {t('cv.blockchainAuthenticity')}
                 </p>
                 <p className={`font-body-md text-body-md font-medium ${authenticity.isAuthentic ? 'text-primary' : 'text-error'}`}>
                   {authenticity.message}
                 </p>
-                <p className="font-code text-code text-on-surface-variant mt-1">Block #{authenticity.blockNumber} · hash {authenticity.blockHash ? authenticity.blockHash.slice(0, 16) + '…' : 'n/a'}</p>
+                <p className="font-code text-code text-on-surface-variant mt-1">{t('cv.hashLine', { num: authenticity.blockNumber, hash: authenticity.blockHash ? authenticity.blockHash.slice(0, 16) + '…' : 'n/a' })}</p>
               </div>
             )}
           </div>
@@ -132,9 +134,9 @@ export default function CertificateView() {
             <div className="neu-recessed p-4 rounded-xl bg-white">
               <div className="w-40 h-40 bg-white rounded flex items-center justify-center overflow-hidden">
                 {qrUrl ? (
-                  <img src={qrUrl} alt="Verification QR Code" className="w-full h-full object-contain" />
+                  <img src={qrUrl} alt={t('cv.qrAlt')} className="w-full h-full object-contain" />
                 ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 font-code">QR CODE</div>
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 font-code">{t('cv.qrCode')}</div>
                 )}
               </div>
               <p className="text-center mt-2 font-code text-label-sm text-on-surface-variant">ID: {certData?.id}</p>
@@ -145,15 +147,15 @@ export default function CertificateView() {
         {/* Footer / Signature */}
         <div className="w-full flex justify-between items-end mt-8 relative z-10 pt-8 border-t border-surface-dim/50">
           <div className="w-1/3">
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-4">Authorized Signature</p>
+            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-4">{t('cv.authorizedSignature')}</p>
             <div className="border-b-2 border-on-surface-variant/50 w-full h-12 flex items-end justify-center pb-2">
               <span className="font-headline-sm text-headline-sm italic text-primary/80" style={{ fontFamily: "'Times New Roman', serif" }}>{certData?.inspector_name}</span>
             </div>
-            <p className="text-center font-label-sm text-label-sm text-on-surface-variant mt-2">Chief Inspector, Metrology</p>
+            <p className="text-center font-label-sm text-label-sm text-on-surface-variant mt-2">{t('cv.chiefInspector')}</p>
           </div>
           <div className="flex items-center gap-2 text-on-surface-variant">
             <span className="material-symbols-outlined text-3xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
-            <span className="font-label-sm text-label-sm">Official Metrology Document</span>
+            <span className="font-label-sm text-label-sm">{t('cv.officialDocument')}</span>
           </div>
         </div>
       </div>

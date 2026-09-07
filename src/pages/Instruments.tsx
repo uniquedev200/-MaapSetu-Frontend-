@@ -3,6 +3,8 @@ import { fetchInstruments, createInstrument } from '../api';
 import { useToast } from '../components/ToastContext';
 import { useAuth } from '../components/AuthContext';
 import EmptyState from '../components/EmptyState';
+import StatusBadge from '../components/StatusBadge';
+import { useLang } from '../i18n/LanguageContext';
 
 const EMPTY_FORM = {
   name: '',
@@ -25,6 +27,7 @@ export default function Instruments() {
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { t } = useLang();
   const isBusiness = user?.role === 'BUSINESS';
 
   const loadInstruments = () => {
@@ -48,7 +51,7 @@ export default function Instruments() {
 
   const handleAddInstrument = async () => {
     if (!form.name.trim() || !form.serial_number.trim()) {
-      showToast('Please provide the instrument name and serial number.', 'error');
+      showToast(t('inst.requireName'), 'error');
       return;
     }
     setSaving(true);
@@ -69,19 +72,19 @@ export default function Instruments() {
         } catch { /* ignore malformed session */ }
       }
       await createInstrument(payload);
-      showToast('Instrument Added Successfully.', 'success');
+      showToast(t('inst.added'), 'success');
       setIsAddModalOpen(false);
       setForm({ ...EMPTY_FORM });
       loadInstruments();
     } catch (error: any) {
-      showToast(error?.response?.data?.detail || 'Failed to add instrument.', 'error');
+      showToast(error?.response?.data?.detail || t('inst.failAdd'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center">Loading instruments...</div>;
+    return <div className="p-8 flex items-center justify-center">{t('inst.loading')}</div>;
   }
 
   return (
@@ -89,8 +92,8 @@ export default function Instruments() {
       {/* Page Header & Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-primary">{isBusiness ? 'My Instruments' : 'Instrument Inventory'}</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">{isBusiness ? 'Manage and track the instruments registered to your business.' : 'Instruments linked to your assigned verifications and inspections.'}</p>
+          <h2 className="font-headline-lg text-headline-lg text-primary">{isBusiness ? t('inst.titleBusiness') : t('inst.title')}</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">{isBusiness ? t('inst.subtitleBusiness') : t('inst.subtitle')}</p>
         </div>
         {isBusiness && (
           <button 
@@ -98,7 +101,7 @@ export default function Instruments() {
             className="neu-btn px-6 py-3 flex items-center gap-2 text-primary font-label-lg font-bold bg-primary-fixed/20 hover:bg-primary-fixed/30"
           >
             <span className="material-symbols-outlined">add_circle</span>
-            Add New Instrument
+            {t('inst.addNew')}
           </button>
         )}
       </div>
@@ -111,7 +114,7 @@ export default function Instruments() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="neu-input w-full pl-12 pr-4 py-3 text-body-md font-body-md placeholder-on-surface-variant/70 text-on-surface bg-transparent focus:ring-0 outline-none" 
-            placeholder="Search by Serial Number or Type..." 
+            placeholder={t('inst.searchPlaceholder')} 
             type="text" 
           />
         </div>
@@ -123,10 +126,10 @@ export default function Instruments() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="neu-btn appearance-none pl-10 pr-8 py-2 flex items-center gap-2 text-on-surface-variant font-label-lg text-label-lg outline-none focus:ring-2 focus:ring-primary/20 bg-transparent"
             >
-              <option value="">All Categories</option>
-              <option value="Weighing Scale">Weighing Scale</option>
-              <option value="Flow Meter">Flow Meter</option>
-              <option value="Thermometer">Thermometer</option>
+              <option value="">{t('inst.allCategories')}</option>
+              <option value="Weighing Scale">{t('inst.catWeigh')}</option>
+              <option value="Flow Meter">{t('inst.catFlow')}</option>
+              <option value="Thermometer">{t('inst.catThermo')}</option>
             </select>
           </div>
           
@@ -137,12 +140,12 @@ export default function Instruments() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="neu-btn appearance-none pl-10 pr-8 py-2 flex items-center gap-2 text-on-surface-variant font-label-lg text-label-lg outline-none focus:ring-2 focus:ring-primary/20 bg-transparent"
             >
-              <option value="">All Statuses</option>
-              <option value="REGISTERED">Registered</option>
-              <option value="PENDING_VERIFICATION">Pending</option>
-              <option value="UNDER_VERIFICATION">Under Verification</option>
-              <option value="VERIFIED">Verified</option>
-              <option value="FAILED">Failed</option>
+              <option value="">{t('inst.allStatuses')}</option>
+              <option value="REGISTERED">{t('inst.statRegistered')}</option>
+              <option value="PENDING_VERIFICATION">{t('inst.statPending')}</option>
+              <option value="UNDER_VERIFICATION">{t('inst.statUnder')}</option>
+              <option value="VERIFIED">{t('inst.statVerified')}</option>
+              <option value="FAILED">{t('inst.statFailed')}</option>
             </select>
           </div>
         </div>
@@ -154,12 +157,12 @@ export default function Instruments() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-surface-dim/50">
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Serial Number</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Type/Category</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Capacity/Class</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Calibration Freq.</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Verification Status</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold text-right">Actions</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('inst.colSerial')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('inst.colType')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('inst.colCapacity')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('inst.colCalib')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('inst.colStatus')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold text-right">{t('inst.colActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-dim/30">
@@ -174,7 +177,7 @@ export default function Instruments() {
                     <td className="py-4 px-6 font-body-md text-body-md text-on-surface-variant">{instrument.capacity_max}{instrument.unit_of_measurement} / Class III</td>
                     <td className="py-4 px-6 font-body-md text-body-md text-on-surface-variant">{instrument.verification_frequency_months} mos</td>
                     <td className="py-4 px-6">
-                      <InstrumentStatus status={instrument.status} />
+                      <StatusBadge status={instrument.status} />
                     </td>
                     <td className="py-4 px-6 text-right">
                       {isBusiness && (
@@ -190,8 +193,8 @@ export default function Instruments() {
                   <td colSpan={6} className="p-0">
                     <EmptyState 
                       icon="search_off" 
-                      title="No instruments found" 
-                      description="Try adjusting your search query or filters."
+                      title={t('inst.noResultsTitle')} 
+                      description={t('inst.noResultsDesc')}
                     />
                   </td>
                 </tr>
@@ -202,7 +205,7 @@ export default function Instruments() {
         
         {/* Pagination */}
         <div className="p-4 border-t border-surface-dim/30 flex items-center justify-between">
-          <span className="font-body-md text-body-md text-on-surface-variant">Showing 1-{filteredInstruments.length} of {instruments.length} instruments</span>
+          <span className="font-body-md text-body-md text-on-surface-variant">{t('inst.showing', { current: '1', total: filteredInstruments.length, all: instruments.length })}</span>
           <div className="flex gap-2">
             <button className="w-8 h-8 neu-btn flex items-center justify-center text-on-surface-variant hover:text-primary disabled:opacity-50" disabled>
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -222,7 +225,7 @@ export default function Instruments() {
         <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="neu-flat rounded-2xl w-full max-w-lg p-6 bg-background max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="font-headline-sm text-headline-sm text-on-surface">Add New Instrument</h2>
+              <h2 className="font-headline-sm text-headline-sm text-on-surface">{t('inst.addTitle')}</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="w-8 h-8 flex items-center justify-center text-on-surface-variant neu-btn rounded-full">
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -230,17 +233,17 @@ export default function Instruments() {
             
             <div className="flex flex-col gap-4">
               <div>
-                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Instrument Name</label>
+                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('inst.instrumentName')}</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full neu-input-container rounded-lg px-4 py-2 text-body-md outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="e.g. Platform Scale"
+                  placeholder={t('inst.namePlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Serial Number</label>
+                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('inst.serialLabel')}</label>
                 <input
                   type="text"
                   value={form.serial_number}
@@ -250,30 +253,30 @@ export default function Instruments() {
                 />
               </div>
               <div>
-                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Instrument Type</label>
+                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('inst.instrumentType')}</label>
                 <select
                   value={form.instrument_type}
                   onChange={(e) => setForm({ ...form, instrument_type: e.target.value })}
                   className="w-full neu-input-container rounded-lg px-4 py-2 text-body-md outline-none focus:ring-2 focus:ring-primary/20 bg-transparent"
                 >
-                  <option>Weighing Scale</option>
-                  <option>Flow Meter</option>
-                  <option>Thermometer</option>
+                  <option>{t('inst.catWeigh')}</option>
+                  <option>{t('inst.catFlow')}</option>
+                  <option>{t('inst.catThermo')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Model Number</label>
+                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('inst.modelLabel')}</label>
                 <input
                   type="text"
                   value={form.model_number}
                   onChange={(e) => setForm({ ...form, model_number: e.target.value })}
                   className="w-full neu-input-container rounded-lg px-4 py-2 text-body-md outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="e.g. DS-500"
+                  placeholder={t('inst.modelPlaceholder')}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Max Capacity</label>
+                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('inst.maxCapacity')}</label>
                   <input
                     type="number"
                     value={form.capacity_max}
@@ -283,7 +286,7 @@ export default function Instruments() {
                   />
                 </div>
                 <div>
-                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Unit</label>
+                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('inst.unit')}</label>
                   <select
                     value={form.unit_of_measurement}
                     onChange={(e) => setForm({ ...form, unit_of_measurement: e.target.value })}
@@ -296,13 +299,13 @@ export default function Instruments() {
                 </div>
               </div>
               <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setIsAddModalOpen(false)} className="px-6 py-2 neu-btn text-on-surface-variant font-label-lg rounded-lg">Cancel</button>
+                <button onClick={() => setIsAddModalOpen(false)} className="px-6 py-2 neu-btn text-on-surface-variant font-label-lg rounded-lg">{t('common.cancel')}</button>
                 <button
                   onClick={handleAddInstrument}
                   disabled={saving}
                   className="px-6 py-2 neu-flat text-primary !bg-primary !text-on-primary font-label-lg font-bold rounded-lg shadow-[4px_4px_8px_#dce1eb,-4px_-4px_8px_#ffffff] disabled:opacity-60"
                 >
-                  {saving ? 'Saving...' : 'Add Instrument'}
+                  {saving ? t('common.saving') : t('inst.add')}
                 </button>
               </div>
             </div>
@@ -315,7 +318,7 @@ export default function Instruments() {
         <div className="fixed inset-0 bg-black/40 z-[100] flex items-end sm:items-center justify-center sm:p-4 backdrop-blur-sm animate-slide-up sm:animate-none" onClick={() => setActionInstrumentId(null)}>
           <div className="neu-flat rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm p-6 bg-background flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-headline-sm text-headline-sm text-on-surface">Instrument Actions</h3>
+              <h3 className="font-headline-sm text-headline-sm text-on-surface">{t('inst.actionsTitle')}</h3>
               <button onClick={() => setActionInstrumentId(null)} className="w-8 h-8 flex items-center justify-center text-on-surface-variant neu-btn rounded-full">
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -323,73 +326,36 @@ export default function Instruments() {
             
             <button 
               onClick={() => {
-                showToast('Opening Edit Dialog...', 'info');
+                showToast(t('inst.editToast'), 'info');
                 setActionInstrumentId(null);
               }}
               className="w-full text-left neu-btn px-4 py-3 rounded-lg text-on-surface flex items-center gap-3 hover:bg-surface-container-low"
             >
-              <span className="material-symbols-outlined text-primary">edit</span> Edit Details
+              <span className="material-symbols-outlined text-primary">edit</span> {t('inst.editDetails')}
             </button>
             
             <button 
               onClick={() => {
-                showToast('Fetching history logs...', 'info');
+                showToast(t('inst.historyToast'), 'info');
                 setActionInstrumentId(null);
               }}
               className="w-full text-left neu-btn px-4 py-3 rounded-lg text-on-surface flex items-center gap-3 hover:bg-surface-container-low"
             >
-              <span className="material-symbols-outlined text-primary">history</span> View History
+              <span className="material-symbols-outlined text-primary">history</span> {t('inst.viewHistory')}
             </button>
 
             <button 
               onClick={() => {
-                showToast('Instrument deleted successfully.', 'error');
+                showToast(t('inst.deleted'), 'error');
                 setActionInstrumentId(null);
               }}
               className="w-full text-left neu-btn px-4 py-3 rounded-lg text-error flex items-center gap-3 hover:bg-error-container/20 mt-2"
             >
-              <span className="material-symbols-outlined">delete</span> Delete Instrument
+              <span className="material-symbols-outlined">delete</span> {t('inst.delete')}
             </button>
           </div>
         </div>
       )}
     </div>
   );
-}
-
-function InstrumentStatus({ status }: { status: string }) {
-  switch (status) {
-    case 'REGISTERED':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary-container/20 text-primary">
-          <span className="w-2 h-2 rounded-full bg-primary"></span> REGISTERED
-        </span>
-      );
-    case 'PENDING_VERIFICATION':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-container/20 text-tertiary">
-          <span className="w-2 h-2 rounded-full bg-tertiary"></span> PENDING_VERIFICATION
-        </span>
-      );
-    case 'UNDER_VERIFICATION':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed/40 text-tertiary-container">
-          <span className="material-symbols-outlined text-[14px] animate-spin">sync</span> UNDER_VERIFICATION
-        </span>
-      );
-    case 'VERIFIED':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-          <span className="material-symbols-outlined text-[14px]">check_circle</span> VERIFIED
-        </span>
-      );
-    case 'FAILED':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-error-container/50 text-on-error-container">
-          <span className="material-symbols-outlined text-[14px]">error</span> FAILED
-        </span>
-      );
-    default:
-      return <span>{status}</span>;
-  }
 }

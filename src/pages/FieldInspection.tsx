@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { submitInspectionFindings, scheduleVerification, fetchApplicationDetails, uploadFile, resolveFileUrl, mapsLink } from '../api';
 import { useToast } from '../components/ToastContext';
 import { useAuth } from '../components/AuthContext';
+import { useLang } from '../i18n/LanguageContext';
 
 const NOT_SCHEDULED = ['SUBMITTED', 'APPROVED', 'ASSIGNED_LMO'];
 const TERMINAL = ['COMPLETED', 'CERTIFICATE_ISSUED', 'REJECTED', 'WITHDRAWN', 'CANCELLED'];
@@ -12,6 +13,7 @@ export default function FieldInspection() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { t } = useLang();
   const [appliedLoad, setAppliedLoad] = useState('');
   const [loadReading, setLoadReading] = useState('');
   const [eccentricity, setEccentricity] = useState('');
@@ -40,7 +42,7 @@ export default function FieldInspection() {
   const needsSchedule = NOT_SCHEDULED.includes(status);
   const isComplete = TERMINAL.includes(status);
   const inspectionOpen = !needsSchedule && !!appData && !isComplete;
-  const statusLabel = needsSchedule ? 'Awaiting Schedule' : isComplete ? (status ?? 'Completed') : 'Scheduled';
+  const statusLabel = needsSchedule ? t('fi.awaitingSchedule') : isComplete ? (status === 'REJECTED' ? t('fi.rejected') : t('fi.complete')) : t('fi.scheduled');
 
   const instrument = appData?.instruments?.[0];
 
@@ -55,9 +57,15 @@ export default function FieldInspection() {
     : 0;
   const guideMpeDisplay = intervalE > 0 ? intervalE * 0.5 : 0;
 
+  const classSuffix = instrument?.accuracy_class ? instrument.accuracy_class.replace('Class ', '') : 'III';
+  const standardRef =
+    `${t('fi.accuracyClass', { cls: classSuffix })} · ${t('fi.standardRef')}` +
+    `${intervalE > 0 ? ` · ${t('fi.intervalE', { e: intervalE })}` : ` · ${t('fi.mpeServerDerived')}`}` +
+    `${!instrument?.accuracy_class ? ` (${t('fi.defaultClassNote')})` : ''}`;
+
   const handleSchedule = async () => {
     if (!scheduledDate) {
-      showToast('Please pick a scheduled date.', 'error');
+      showToast(t('fi.pickDate'), 'error');
       return;
     }
     setScheduling(true);
@@ -66,10 +74,10 @@ export default function FieldInspection() {
         scheduled_date: scheduledDate,
         scheduled_location: scheduledLocation || undefined
       });
-      showToast('Inspection scheduled.', 'success');
+      showToast(t('fi.scheduledToast'), 'success');
       fetchApplicationDetails(id || '').then(setAppData).catch(console.error);
     } catch (e: any) {
-      showToast(e?.response?.data?.detail || 'Failed to schedule inspection.', 'error');
+      showToast(e?.response?.data?.detail || t('fi.failSchedule'), 'error');
     } finally {
       setScheduling(false);
     }
@@ -84,9 +92,9 @@ export default function FieldInspection() {
         const res = await uploadFile(file);
         setUploadedFiles(prev => [...prev, { name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.url || res.path }]);
       }
-      showToast(`${files.length} file${files.length > 1 ? 's' : ''} uploaded.`, 'success');
+      showToast(t('fi.filesUploaded', { count: files.length, s: files.length > 1 ? 's' : '' }), 'success');
     } catch (err: any) {
-      showToast(err?.response?.data?.detail || 'Upload failed.', 'error');
+      showToast(err?.response?.data?.detail || t('fi.uploadFail'), 'error');
     } finally {
       setUploading(false);
       if (e.target) e.target.value = '';
@@ -107,7 +115,7 @@ export default function FieldInspection() {
       navigate(`/applications/${id}`);
     } catch (e: any) {
       console.error(e);
-      showToast(e?.response?.data?.detail || 'Failed to submit findings.', 'error');
+      showToast(e?.response?.data?.detail || t('fi.failSubmit'), 'error');
       setLoading(false);
     }
   };
@@ -123,7 +131,7 @@ export default function FieldInspection() {
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <div className="flex flex-col">
-          <span className="font-headline-sm text-headline-sm font-extrabold text-primary">Inspection</span>
+          <span className="font-headline-sm text-headline-sm font-extrabold text-primary">{t('fi.title')}</span>
           <span className="font-label-sm text-label-sm text-on-surface-variant">{id || 'LMO-2023-892A'}</span>
         </div>
       </div>
@@ -151,11 +159,11 @@ export default function FieldInspection() {
         )}
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant">Serial No.</span>
+            <span className="font-label-sm text-label-sm text-on-surface-variant">{t('fi.serialNo')}</span>
             <span className="font-label-lg text-label-lg font-code">{instrument?.serial || 'SN-8839-KL'}</span>
           </div>
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant">Class / Type</span>
+            <span className="font-label-sm text-label-sm text-on-surface-variant">{t('fi.classType')}</span>
             <span className="font-label-lg text-label-lg">{instrument?.class || 'Class III'} / {instrument?.type || 'Routine'}</span>
           </div>
         </div>
@@ -166,8 +174,7 @@ export default function FieldInspection() {
         <section className="neu-flat rounded-xl p-4">
           <p className="font-body-md text-body-md text-on-surface-variant flex items-start gap-2">
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant">person_off</span>
-            This request is assigned to {appData?.assigned_officer || 'another officer'} — only the assigned officer
-            can schedule or perform this inspection. You are viewing in read-only mode.
+            {t('fi.readOnlyAssigned', { name: appData?.assigned_officer || t('fi.anotherOfficer') })}
           </p>
         </section>
       )}
@@ -177,9 +184,7 @@ export default function FieldInspection() {
         <section className="neu-flat rounded-xl p-4">
           <p className="font-body-md text-body-md text-on-surface-variant flex items-start gap-2">
             <span className="material-symbols-outlined text-[18px] text-primary">lock</span>
-            {isBusiness
-              ? 'Only the assigned legal metrology officer can schedule and perform this inspection. Track progress from your applications list.'
-              : 'Only legal metrology officers (LMO/GATC) can schedule and perform inspections. Viewing read-only mode.'}
+            {isBusiness ? t('fi.readOnlyBusiness') : t('fi.readOnlyOfficer')}
           </p>
         </section>
       )}
@@ -187,10 +192,10 @@ export default function FieldInspection() {
       {/* Schedule Step (before inspection) */}
       {needsSchedule && canPerform && (
         <section className="flex flex-col gap-4">
-          <h3 className="font-headline-sm text-headline-sm font-semibold px-1">Schedule Inspection</h3>
+          <h3 className="font-headline-sm text-headline-sm font-semibold px-1">{t('fi.scheduleTitle')}</h3>
           <div className="neu-flat rounded-xl p-5 flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <label className="font-label-lg text-label-lg text-on-surface pl-1">Scheduled Date</label>
+              <label className="font-label-lg text-label-lg text-on-surface pl-1">{t('fi.scheduleDate')}</label>
               <div className="neu-input-container rounded-lg flex items-center px-4 h-12">
                 <input
                   className="neu-input w-full text-on-surface font-body-md placeholder-outline h-full border-none focus:ring-0 outline-none"
@@ -201,11 +206,11 @@ export default function FieldInspection() {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="font-label-lg text-label-lg text-on-surface pl-1">Location (optional)</label>
+              <label className="font-label-lg text-label-lg text-on-surface pl-1">{t('fi.locationOptional')}</label>
               <div className="neu-input-container rounded-lg flex items-center px-4 h-12">
                 <input
                   className="neu-input w-full text-on-surface font-body-md placeholder-outline h-full border-none focus:ring-0 outline-none"
-                  placeholder="Premises / site address"
+                  placeholder={t('fi.premisesPlaceholder')}
                   value={scheduledLocation}
                   onChange={(e) => setScheduledLocation(e.target.value)}
                 />
@@ -217,7 +222,7 @@ export default function FieldInspection() {
               className="py-4 rounded-xl font-label-lg text-label-lg text-primary font-bold neu-flat transition-all active:scale-95 flex items-center justify-center gap-2 hover:bg-primary-fixed/20 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined">event_available</span>
-              {scheduling ? 'Scheduling...' : 'Schedule Inspection'}
+              {scheduling ? t('fi.scheduling') : t('fi.schedule')}
             </button>
           </div>
         </section>
@@ -230,19 +235,21 @@ export default function FieldInspection() {
             <span className="material-symbols-outlined text-[28px]">{status === 'REJECTED' ? 'gpp_bad' : 'verified'}</span>
           </div>
           <h3 className={`font-headline-sm text-headline-sm font-semibold ${status === 'REJECTED' ? 'text-error' : 'text-primary'}`}>
-            {status === 'REJECTED' ? 'Inspection Rejected' : 'Inspection Complete'}
+            {status === 'REJECTED' ? t('fi.rejected') : t('fi.complete')}
           </h3>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-md">
             {status === 'REJECTED'
-              ? 'This verification failed: the instrument did not meet the required metrology tolerances. No certificate was issued.'
-              : `This verification has been completed${status === 'CERTIFICATE_ISSUED' ? ' and the certificate has been issued' : ''}. Further actions are handled from the application.`}
+              ? t('fi.rejectedMsg')
+              : status === 'CERTIFICATE_ISSUED'
+                ? t('fi.completeMsg', { extra: t('fi.issuedExtra') })
+                : t('fi.completeNoExtra')}
           </p>
           <button
             onClick={() => navigate(`/applications/${id}`)}
             className="mt-2 px-6 py-3 rounded-xl font-label-lg text-label-lg text-primary font-bold neu-flat transition-all active:scale-95 hover:bg-primary-fixed/20 flex items-center gap-2"
           >
             <span className="material-symbols-outlined">description</span>
-            Open Application
+            {t('fi.openApplication')}
           </button>
         </section>
       )}
@@ -251,14 +258,14 @@ export default function FieldInspection() {
       {inspectionOpen && canPerform && (
         <>
       <section className="flex flex-col gap-4">
-        <h3 className="font-headline-sm text-headline-sm font-semibold px-1">Precision Readings</h3>
+        <h3 className="font-headline-sm text-headline-sm font-semibold px-1">{t('fi.precisionReadings')}</h3>
         <div className="neu-flat rounded-xl p-5 flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <label className="font-label-lg text-label-lg text-on-surface pl-1">Applied Test Load</label>
+            <label className="font-label-lg text-label-lg text-on-surface pl-1">{t('fi.appliedLoad')}</label>
             <div className="neu-input-container rounded-lg flex items-center px-4 h-12">
               <input 
                 className="neu-input w-full text-on-surface font-body-md placeholder-outline h-full border-none focus:ring-0 outline-none" 
-                placeholder={instrument ? `e.g. ${instrument.capacity_max || 150} kg` : 'Nominal load applied'}
+                placeholder={instrument ? t('fi.loadPlaceholder', { capacity: instrument.capacity_max || 150 }) : t('fi.nominalLoad')}
                 type="number" 
                 value={appliedLoad}
                 onChange={(e) => setAppliedLoad(e.target.value)}
@@ -267,11 +274,11 @@ export default function FieldInspection() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="font-label-lg text-label-lg text-on-surface pl-1">Observed Reading</label>
+            <label className="font-label-lg text-label-lg text-on-surface pl-1">{t('fi.observedReading')}</label>
             <div className="neu-input-container rounded-lg flex items-center px-4 h-12">
               <input 
                 className="neu-input w-full text-on-surface font-body-md placeholder-outline h-full border-none focus:ring-0 outline-none" 
-                placeholder="Displayed value on the scale" 
+                placeholder={t('fi.readingPlaceholder')} 
                 type="number" 
                 value={loadReading}
                 onChange={(e) => setLoadReading(e.target.value)}
@@ -280,11 +287,11 @@ export default function FieldInspection() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="font-label-lg text-label-lg text-on-surface pl-1">Eccentricity Deviation</label>
+            <label className="font-label-lg text-label-lg text-on-surface pl-1">{t('fi.eccentricity')}</label>
             <div className="neu-input-container rounded-lg flex items-center px-4 h-12">
               <input 
                 className="neu-input w-full text-on-surface font-body-md placeholder-outline h-full border-none focus:ring-0 outline-none" 
-                placeholder="Max off-centre deviation" 
+                placeholder={t('fi.eccPlaceholder')} 
                 type="number" 
                 value={eccentricity}
                 onChange={(e) => setEccentricity(e.target.value)}
@@ -296,30 +303,29 @@ export default function FieldInspection() {
           {/* Live scientific preview (display only; authoritative verdict is computed server-side) */}
           <div className="neu-recessed rounded-xl p-4 grid grid-cols-2 gap-4">
             <div>
-              <span className="font-label-sm text-label-sm text-outline">Deviation observed</span>
+              <span className="font-label-sm text-label-sm text-outline">{t('fi.deviation')}</span>
               <p className={`font-label-lg text-label-lg font-bold ${Number.isFinite(deviationG) && guideMpeDisplay > 0 && deviationG > guideMpeDisplay ? 'text-error' : 'text-on-surface'}`}>
                 {Number.isFinite(deviationG) ? `${deviationG.toFixed(1)} g` : '—'}
               </p>
             </div>
             <div>
-              <span className="font-label-sm text-label-sm text-outline">MPE guide (±0.5e)</span>
+              <span className="font-label-sm text-label-sm text-outline">{t('fi.mpeGuide')}</span>
               <p className="font-label-lg text-label-lg font-bold text-on-surface">
                 {guideMpeDisplay > 0 ? `± ${guideMpeDisplay.toFixed(1)} g` : '—'}
               </p>
             </div>
             <div className="col-span-2">
-              <span className="font-label-sm text-label-sm text-outline text-[11px]">Standard</span>
+              <span className="font-label-sm text-label-sm text-outline text-[11px]">{t('fi.standard')}</span>
               <p className="font-body-md text-body-md text-on-surface-variant text-[11px]">
-                {instrument?.accuracy_class ? `Class ${instrument.accuracy_class.replace('Class ', '')}` : 'Class III'} · IS 14625 / OIML R 76-1{intervalE > 0 ? ` · verification interval e = ${intervalE} g` : ' · MPE derived server-side from instrument capacity'}
-                {!instrument?.accuracy_class && ' (default Class III for demo instruments)'}
+                {standardRef}
               </p>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-2">
             <div className="flex flex-col">
-              <span className="font-label-lg text-label-lg text-on-surface">Within Tolerance</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">Auto-flagged if deviation exceeds MPE</span>
+              <span className="font-label-lg text-label-lg text-on-surface">{t('fi.withinTolerance')}</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant">{t('fi.autoFlagged')}</span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer group">
               <input 
@@ -336,15 +342,15 @@ export default function FieldInspection() {
 
       {/* Media Upload */}
       <section className="flex flex-col gap-4">
-        <h3 className="font-headline-sm text-headline-sm font-semibold px-1">Evidence & Files</h3>
+        <h3 className="font-headline-sm text-headline-sm font-semibold px-1">{t('fi.evidence')}</h3>
         <div className="neu-flat rounded-xl p-5 flex flex-col gap-4">
           <label className="border-2 border-dashed border-outline-variant rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-surface-container bg-surface-container-low">
             <input type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={handleFiles} disabled={uploading} />
             <div className="h-12 w-12 rounded-full neu-flat flex items-center justify-center text-primary mb-2">
               <span className="material-symbols-outlined">{uploading ? 'sync' : 'cloud_upload'}</span>
             </div>
-            <span className="font-label-lg text-label-lg text-on-surface text-center">{uploading ? 'Uploading...' : 'Tap to upload photos or PDF'}</span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant text-center">Real uploads → stored evidence, attached to this inspection</span>
+            <span className="font-label-lg text-label-lg text-on-surface text-center">{uploading ? t('fi.uploading') : t('fi.uploadHint')}</span>
+            <span className="font-label-sm text-label-sm text-on-surface-variant text-center">{t('fi.uploadLabel')}</span>
           </label>
           <div className="flex flex-col gap-3">
             {uploadedFiles.map((file: any, i: number) => (
@@ -359,7 +365,7 @@ export default function FieldInspection() {
                   </div>
                   <div className="flex flex-col">
                     <span className="font-label-sm text-label-sm text-on-surface font-semibold truncate w-40">{file.name}</span>
-                    <span className="font-label-sm text-label-sm text-on-surface-variant text-[10px]">{file.size} · uploaded</span>
+                    <span className="font-label-sm text-label-sm text-on-surface-variant text-[10px]">{file.size} · {t('fi.uploadedLabel')}</span>
                   </div>
                 </div>
                 <button onClick={() => setUploadedFiles((f: any[]) => f.filter((_: any, x: number) => x !== i))} className="text-error p-2 rounded-full hover:bg-error-container/50 transition-colors flex items-center justify-center">
@@ -373,11 +379,11 @@ export default function FieldInspection() {
 
       <section className="flex flex-col gap-4 mb-4">
         <div className="neu-flat rounded-xl p-5 flex flex-col gap-2">
-          <label className="font-label-lg text-label-lg text-on-surface pl-1">Inspector Notes</label>
+          <label className="font-label-lg text-label-lg text-on-surface pl-1">{t('fi.inspectorNotes')}</label>
           <div className="neu-input-container rounded-lg p-1">
             <textarea 
               className="neu-input w-full text-on-surface font-body-md placeholder-outline resize-none p-3 h-24 border-none outline-none focus:ring-0" 
-              placeholder="Add optional remarks..." 
+              placeholder={t('fi.notesPlaceholder')} 
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -397,7 +403,7 @@ export default function FieldInspection() {
             className="flex-1 py-4 rounded-xl font-label-lg text-label-lg text-primary font-bold neu-flat transition-all active:scale-95 flex items-center justify-center gap-2 hover:bg-primary-fixed/20 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined">check_circle</span>
-            {loading ? 'Submitting...' : 'Submit Findings'}
+            {loading ? t('fi.submitting') : t('fi.submitFindings')}
           </button>
         </div>
       </div>

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import { useToast } from '../components/ToastContext';
+import { useLang } from '../i18n/LanguageContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import { signupApi } from '../api';
 
 export default function Signup() {
@@ -14,12 +16,13 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { showToast } = useToast();
+  const { t } = useLang();
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password) {
-      showToast('Please fill all required fields', 'error');
+      showToast(t('signup.fillRequired'), 'error');
       return;
     }
 
@@ -41,10 +44,10 @@ export default function Signup() {
         token: response.token
       } as any);
       
-      showToast('Account created successfully!', 'success');
+      showToast(t('signup.success'), 'success');
       navigate('/dashboard');
     } catch (error: any) {
-      const message = error.response?.data?.detail || 'Failed to create account. Please try again.';
+      const message = error.response?.data?.detail || t('signup.failCreate');
       showToast(message, 'error');
     } finally {
       setIsLoading(false);
@@ -54,17 +57,20 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-center items-center p-4 py-12">
       <div className="w-full max-w-md animate-slide-up">
+        <div className="flex justify-end mb-2">
+          <LanguageSwitcher />
+        </div>
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-4xl">person_add</span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-bold">Create Account</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-2">Join LM Verify to manage your instruments</p>
+          <h1 className="font-headline-lg text-headline-lg text-primary font-bold">{t('signup.title')}</h1>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-2">{t('signup.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSignup} className="neu-flat p-8 rounded-3xl flex flex-col gap-6">
           <div className="flex flex-col gap-1.5">
-            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">Full Name or Business</label>
+            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">{t('signup.fullName')}</label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">person</span>
               <input 
@@ -78,7 +84,7 @@ export default function Signup() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">Business Name (optional)</label>
+            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">{t('signup.businessName')}</label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">storefront</span>
               <input 
@@ -92,7 +98,7 @@ export default function Signup() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">Email Address</label>
+            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">{t('signup.email')}</label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
               <input 
@@ -107,7 +113,7 @@ export default function Signup() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">Phone (optional)</label>
+              <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">{t('signup.phone')}</label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">call</span>
                 <input 
@@ -121,7 +127,7 @@ export default function Signup() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">District (optional)</label>
+              <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">{t('signup.district')}</label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">location_on</span>
                 <input 
@@ -136,7 +142,7 @@ export default function Signup() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">Password</label>
+            <label className="font-label-sm text-label-sm text-on-surface-variant ml-1">{t('signup.password')}</label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
               <input 
@@ -144,7 +150,7 @@ export default function Signup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full neu-input-container pl-12 pr-4 py-3 rounded-xl font-body-md text-on-surface outline-none focus:ring-2 focus:ring-primary/20 bg-transparent transition-all"
-                placeholder="Create a strong password"
+                placeholder={t('signup.passwordPlaceholder')}
               />
             </div>
           </div>
@@ -154,12 +160,12 @@ export default function Signup() {
             disabled={isLoading}
             className="w-full py-3 mt-4 neu-flat !bg-primary !text-on-primary font-label-lg font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-70 transition-all shadow-[4px_4px_8px_#dce1eb,-4px_-4px_8px_#ffffff]"
           >
-            {isLoading ? <span className="material-symbols-outlined animate-spin">sync</span> : 'Create Account'}
+            {isLoading ? <span className="material-symbols-outlined animate-spin">sync</span> : t('signup.createAccount')}
           </button>
         </form>
 
         <p className="text-center font-body-md text-body-md text-on-surface-variant mt-8">
-          Already have an account? <Link to="/login" className="text-primary font-bold hover:underline">Sign In</Link>
+          {t('signup.haveAccount')} <Link to="/login" className="text-primary font-bold hover:underline">{t('signup.signIn')}</Link>
         </p>
       </div>
     </div>

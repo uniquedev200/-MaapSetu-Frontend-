@@ -4,6 +4,8 @@ import { fetchApplicationDetails, cancelVerification, approveVerification, fetch
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../components/ToastContext';
 import { useAuth } from '../components/AuthContext';
+import { statusTranslationKey } from '../components/StatusBadge';
+import { useLang } from '../i18n/LanguageContext';
 
 const OFFICER_ROLES = ['LMO', 'GATC'];
 
@@ -12,6 +14,7 @@ export default function ApplicationDetails() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { t } = useLang();
   const [appData, setAppData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -39,11 +42,11 @@ export default function ApplicationDetails() {
     setBusy(true);
     try {
       await cancelVerification(id || '');
-      showToast('Application cancelled.', 'success');
+      showToast(t('ad.cancelled'), 'success');
       setIsCancelModalOpen(false);
       load();
     } catch (error: any) {
-      showToast(error?.response?.data?.detail || 'Failed to cancel application.', 'error');
+      showToast(error?.response?.data?.detail || t('ad.failCancel'), 'error');
       setIsCancelModalOpen(false);
     } finally {
       setBusy(false);
@@ -54,11 +57,11 @@ export default function ApplicationDetails() {
     setBusy(true);
     try {
       const updated = await approveVerification(id || '');
-      showToast(`Approved & assigned to ${updated.assigned_officer || 'an officer'}.`, 'success');
+      showToast(t('ad.approvedMsg', { name: updated.assigned_officer || '—' }), 'success');
       setAssignModal(false);
       load();
     } catch (error: any) {
-      showToast(error?.response?.data?.detail || 'Failed to approve application.', 'error');
+      showToast(error?.response?.data?.detail || t('ad.failApprove'), 'error');
     } finally {
       setBusy(false);
     }
@@ -71,25 +74,25 @@ export default function ApplicationDetails() {
       const opts = await fetchAssignOptions(id || '');
       setAssignOptions(opts);
     } catch (error: any) {
-      showToast(error?.response?.data?.detail || 'Could not load assignment options.', 'error');
+      showToast(error?.response?.data?.detail || t('ad.failAssignOptions'), 'error');
       setAssignModal(false);
     }
   };
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center">Loading application details...</div>;
+    return <div className="p-8 flex items-center justify-center">{t('ad.loading')}</div>;
   }
 
   const statusList = [
-    { label: 'Draft', status: 'DRAFT', icon: 'edit_document' },
-    { label: 'Submitted', status: 'SUBMITTED', icon: 'send' },
-    { label: 'Approved', status: 'APPROVED', icon: 'thumb_up' },
-    { label: 'Assigned', status: 'ASSIGNED_LMO', icon: 'person_outline' },
-    { label: 'Scheduled', status: 'SCHEDULED', icon: 'calendar_today' },
-    { label: 'In Progress', status: 'IN_PROGRESS', icon: 'assignment' },
-    { label: 'Issued', status: 'CERTIFICATE_ISSUED', icon: 'verified' },
-    { label: 'Rejected', status: 'REJECTED', icon: 'cancel', danger: true },
-    { label: 'Cancelled', status: 'CANCELLED', icon: 'close', danger: true },
+    { label: t('status.draft'), status: 'DRAFT', icon: 'edit_document' },
+    { label: t('status.submitted'), status: 'SUBMITTED', icon: 'send' },
+    { label: t('status.approved'), status: 'APPROVED', icon: 'thumb_up' },
+    { label: t('status.assigned'), status: 'ASSIGNED_LMO', icon: 'person_outline' },
+    { label: t('status.scheduled'), status: 'SCHEDULED', icon: 'calendar_today' },
+    { label: t('status.inProgress'), status: 'IN_PROGRESS', icon: 'assignment' },
+    { label: t('status.issued'), status: 'CERTIFICATE_ISSUED', icon: 'verified' },
+    { label: t('status.rejected'), status: 'REJECTED', icon: 'cancel', danger: true },
+    { label: t('status.cancelled'), status: 'CANCELLED', icon: 'close', danger: true },
   ];
 
   const statusIndex = statusList.findIndex(s => s.status === appData?.status);
@@ -117,14 +120,14 @@ export default function ApplicationDetails() {
         </div>
         <div className="flex gap-3">
           <span className={`px-4 py-1.5 rounded-full neu-extruded font-label-sm text-label-sm flex items-center gap-2 ${isRejected || isCancelled ? 'text-error' : 'text-primary'}`}>
-            <span className={`w-2 h-2 rounded-full ${isRejected || isCancelled ? 'bg-error' : 'bg-primary'}`}></span> {appData?.status}
+            <span className={`w-2 h-2 rounded-full ${isRejected || isCancelled ? 'bg-error' : 'bg-primary'}`}></span> {statusTranslationKey(appData?.status) ? t(statusTranslationKey(appData?.status)!) : appData?.status}
           </span>
         </div>
       </div>
 
       {/* Top Workflow Stepper */}
       <section className="neu-flat p-padding-card w-full overflow-x-auto">
-        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-6">Workflow Status</h3>
+        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-6">{t('ad.workflow')}</h3>
         <div className="min-w-[800px] flex items-center justify-between relative px-4 py-4">
           <div className="absolute top-1/2 left-8 right-8 h-1 -translate-y-1/2 neu-recessed z-0"></div>
           <div
@@ -152,12 +155,12 @@ export default function ApplicationDetails() {
           </div>
           <div className="flex flex-col gap-1">
             <h3 className={`font-headline-sm text-headline-sm font-bold ${isCancelled ? 'text-on-surface' : 'text-error'}`}>
-              {isCancelled ? 'Application Cancelled' : 'Application Rejected'}
+              {isCancelled ? t('ad.cancelledTitle') : t('ad.rejectedTitle')}
             </h3>
             {isRejected ? (
-              <p className="font-body-md text-body-md text-on-surface">{appData?.rejection_reason || 'The instrument failed the verification inspection. No certificate was issued.'}</p>
+              <p className="font-body-md text-body-md text-on-surface">{appData?.rejection_reason || t('ad.rejectedMsg')}</p>
             ) : (
-              <p className="font-body-md text-body-md text-on-surface-variant">This application was withdrawn by the applicant or cancelled by an administrator.</p>
+              <p className="font-body-md text-body-md text-on-surface-variant">{t('ad.cancelledMsg')}</p>
             )}
           </div>
         </section>
@@ -167,33 +170,32 @@ export default function ApplicationDetails() {
       <div className="print-area grid grid-cols-1 lg:grid-cols-3 gap-stack-gap mb-20">
         <section className="neu-flat p-padding-card lg:col-span-1 h-full">
           <h3 className="font-headline-sm text-headline-sm text-on-surface mb-6 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">storefront</span> Business Info
+            <span className="material-symbols-outlined text-primary">storefront</span> {t('ad.businessInfo')}
           </h3>
           <div className="flex flex-col gap-4">
-            <InfoItem label="Business Name" value={appData?.business_name} />
-            <InfoItem label="Registration Number" value={appData?.registration_number} isCode />
-            <InfoItem label="Location" value={appData?.location} />
+            <InfoItem label={t('ad.businessName')} value={appData?.business_name} />
+            <InfoItem label={t('ad.regNumber')} value={appData?.registration_number} isCode />
+            <InfoItem label={t('ad.location')} value={appData?.location} />
             {isOfficer && appData?.location && (
               <a href={mapsLink(appData.location)} target="_blank" rel="noreferrer" className="neu-extruded p-3 flex items-center justify-between rounded-lg font-label-sm text-label-sm text-primary hover:bg-primary-fixed/20 transition-colors">
-                <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">map</span> Navigate with Google Maps</span>
+                <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">map</span> {t('ad.navigateMaps')}</span>
                 <span className="material-symbols-outlined text-[18px]">open_in_new</span>
               </a>
             )}
-            <InfoItem label="Request Type" value={appData?.type} />
-            <InfoItem label="Preferred Date" value={appData?.preferred_date} />
-            <InfoItem label="Scheduled Date" value={appData?.scheduled_date} />
-            <InfoItem label="Assigned Officer" value={appData?.assigned_officer} />
+            <InfoItem label={t('ad.requestType')} value={appData?.type} />
+            <InfoItem label={t('ad.prefDate')} value={appData?.preferred_date} />
+            <InfoItem label={t('ad.schedDate')} value={appData?.scheduled_date} />
+            <InfoItem label={t('ad.assignedOfficer')} value={appData?.assigned_officer} />
             {otherOfficer && (
               <div className="rounded-xl p-4 border-2 border-outline-variant bg-surface-container-low flex gap-3 items-start">
                 <span className="material-symbols-outlined text-on-surface-variant">person_off</span>
                 <p className="font-body-md text-body-md text-on-surface-variant">
-                  This request is assigned to <b>{appData?.assigned_officer || 'another officer'}</b>. Only the assigned officer
-                  can schedule or perform the inspection.
+                  {t('ad.otherOfficerMsg', { name: appData?.assigned_officer || '—' })}
                 </p>
               </div>
             )}
             <div className="neu-recessed p-4 flex flex-col gap-1">
-              <span className="font-label-sm text-label-sm text-outline">Contact Person</span>
+              <span className="font-label-sm text-label-sm text-outline">{t('ad.contactLabel')}</span>
               <span className="font-body-md text-body-md text-on-surface">{appData?.contact_person}</span>
               <span className="font-body-md text-body-md text-primary">{appData?.contact_phone}</span>
             </div>
@@ -203,9 +205,9 @@ export default function ApplicationDetails() {
         <section className="neu-flat p-padding-card lg:col-span-2 flex flex-col h-full">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">scale</span> Instruments for Verification
+              <span className="material-symbols-outlined text-primary">scale</span> {t('ad.instrumentsFor')}
             </h3>
-            <span className="neu-recessed px-3 py-1 font-label-sm text-label-sm text-on-surface-variant">{appData?.instruments.length} Items</span>
+            <span className="neu-recessed px-3 py-1 font-label-sm text-label-sm text-on-surface-variant">{t('ad.items', { count: appData?.instruments?.length || 0 })}</span>
           </div>
           <div className="flex flex-col gap-4 flex-1">
             {appData?.instruments.map((inst: any, idx: number) => (
@@ -224,30 +226,30 @@ export default function ApplicationDetails() {
       {/* Action Bar */}
       <div className="fixed bottom-0 left-0 md:left-64 right-0 bg-background/80 backdrop-blur-md p-4 shadow-[0_-4px_10px_rgba(220,225,235,0.5)] flex justify-end gap-4 z-10 border-t border-surface-dim">
         <button onClick={() => window.print()} className="neu-btn px-6 py-2.5 font-label-lg text-label-lg text-on-surface-variant flex items-center gap-2">
-          <span className="material-symbols-outlined text-sm">print</span> Print Summary
+          <span className="material-symbols-outlined text-sm">print</span> {t('ad.print')}
         </button>
         {canCancel && (
           <button onClick={() => setIsCancelModalOpen(true)} className="neu-btn px-6 py-2.5 font-label-lg text-label-lg text-error flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">cancel</span> Cancel App
+            <span className="material-symbols-outlined text-sm">cancel</span> {t('ad.cancelApp')}
           </button>
         )}
         {canApprove && (
           <button onClick={openAssignModal} disabled={busy} className="neu-btn px-6 py-2.5 font-label-lg text-label-lg text-primary flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">thumb_up</span> {busy ? 'Approving...' : 'Approve & Assign'}
+            <span className="material-symbols-outlined text-sm">thumb_up</span> {busy ? t('ad.approving') : t('ad.approveAssign')}
           </button>
         )}
         {canInspect && (
           <Link to={`/inspections/${id}`} className="neu-btn px-8 py-2.5 font-label-lg text-label-lg flex items-center gap-2 ml-4 text-primary bg-primary/5 hover:bg-primary/10 transition-colors rounded-lg">
-            <span className="material-symbols-outlined text-sm">assignment_turned_in</span> Begin Inspection
+            <span className="material-symbols-outlined text-sm">assignment_turned_in</span> {t('ad.beginInspection')}
           </Link>
         )}
       </div>
 
       <ConfirmModal
         isOpen={isCancelModalOpen}
-        title="Cancel Application"
-        message="Are you sure you want to cancel this application? This action cannot be undone."
-        confirmLabel="Yes, Cancel Application"
+        title={t('ad.cancelTitle')}
+        message={t('ad.cancelMsg')}
+        confirmLabel={t('ad.confirmCancel')}
         isDestructive={true}
         onConfirm={handleCancel}
         onCancel={() => setIsCancelModalOpen(false)}
@@ -259,23 +261,23 @@ export default function ApplicationDetails() {
           <div className="neu-flat rounded-2xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">Assign Legal Metrology Officer</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-1">Auto-assignment: same district first, then lowest active workload.</p>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t('ad.assignTitle')}</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant mt-1">{t('ad.assignSubtitle')}</p>
               </div>
               <button onClick={() => setAssignModal(false)} className="neu-btn p-2 rounded-full"><span className="material-symbols-outlined">close</span></button>
             </div>
 
             {!assignOptions ? (
               <div className="flex items-center gap-3 py-6 text-on-surface-variant">
-                <span className="material-symbols-outlined animate-spin">sync</span> Computing best fit...
+                <span className="material-symbols-outlined animate-spin">sync</span> {t('ad.computing')}
               </div>
             ) : (
               <>
                 <div className="neu-recessed rounded-xl p-4 mb-3 font-label-sm text-label-sm text-on-surface">
-                  <span className="text-outline block mb-1.5">Instrument district</span>
+                  <span className="text-outline block mb-1.5">{t('ad.instrumentDistrict')}</span>
                   <span className="font-bold text-primary">{assignOptions.district || '—'}</span>
-                  <span className="text-outline block mt-2 mb-1.5">Policy chosen</span>
-                  <span className="font-bold text-secondary">Recommended: {assignOptions.entity_type || 'LMO'} · {assignOptions.officers?.find((o: any) => o.public_id === assignOptions.recommended)?.name || '—'}</span>
+                  <span className="text-outline block mt-2 mb-1.5">{t('ad.policyChosen')}</span>
+                  <span className="font-bold text-secondary">{t('ad.recommended', { value: `${assignOptions.entity_type || 'LMO'} · ${assignOptions.officers?.find((o: any) => o.public_id === assignOptions.recommended)?.name || '—'}` })}</span>
                 </div>
                 <div className="flex flex-col gap-2 max-h-72 overflow-y-auto mb-4">
                   {(assignOptions.officers || []).map((o: any) => {
@@ -289,25 +291,25 @@ export default function ApplicationDetails() {
                           <div>
                             <p className="font-label-sm text-label-sm text-on-surface font-bold flex items-center gap-2">
                               {o.name}
-                              {rec && <span className="px-2 py-0.5 rounded-full bg-primary text-on-primary text-[10px] font-bold">RECOMMENDED</span>}
+                              {rec && <span className="px-2 py-0.5 rounded-full bg-primary text-on-primary text-[10px] font-bold">{t('ad.recBadge')}</span>}
                             </p>
                             <p className="font-label-sm text-label-sm text-on-surface-variant">
-                              {o.in_district ? 'Same district' : `District: ${o.district || '—'}`} · {o.role} · workload {o.workload}
+                              {o.in_district ? t('ad.sameDistrict') : t('ad.district', { value: o.district || '—' })} · {o.role} · {t('ad.workload', { value: o.workload })}
                             </p>
                           </div>
                         </div>
-                        <span className="px-3 py-1 rounded-full neu-recessed font-label-sm text-label-sm text-secondary font-bold">{o.workload} active</span>
+                        <span className="px-3 py-1 rounded-full neu-recessed font-label-sm text-label-sm text-secondary font-bold">{t('ad.active', { value: o.workload })}</span>
                       </div>
                     );
                   })}
                   {!assignOptions.officers?.length && (
-                    <p className="font-body-md text-body-md text-on-surface-variant">No qualified officer available.</p>
+                    <p className="font-body-md text-body-md text-on-surface-variant">{t('ad.noOfficer')}</p>
                   )}
                 </div>
                 <div className="flex justify-end gap-3">
-                  <button onClick={() => setAssignModal(false)} className="neu-btn px-6 py-2.5 font-label-lg text-label-lg text-on-surface-variant">Cancel</button>
+                  <button onClick={() => setAssignModal(false)} className="neu-btn px-6 py-2.5 font-label-lg text-label-lg text-on-surface-variant">{t('common.cancel')}</button>
                   <button onClick={handleApprove} disabled={busy} className="neu-btn px-6 py-2.5 font-label-lg text-label-lg text-primary flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">thumb_up</span> {busy ? 'Approving...' : 'Approve with Auto-Assign'}
+                    <span className="material-symbols-outlined text-sm">thumb_up</span> {busy ? t('ad.approving') : t('ad.approveAuto')}
                   </button>
                 </div>
               </>
@@ -363,6 +365,7 @@ function InfoItem({ label, value, isCode }: { label: string, value: string, isCo
 }
 
 function InstrumentItem({ name, serial, icon, type }: any) {
+  const { t } = useLang();
   return (
     <div className="neu-extruded p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between rounded-lg">
       <div className="flex items-center gap-4">
@@ -371,7 +374,7 @@ function InstrumentItem({ name, serial, icon, type }: any) {
         </div>
         <div>
           <h4 className="font-label-lg text-label-lg text-on-surface">{name}</h4>
-          <p className="font-body-md text-body-md text-on-surface-variant">Serial: {serial}</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">{t('ad.serialPrefix', { serial })}</p>
         </div>
       </div>
       <div className="flex gap-2">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { fetchBusinessProfile, updateBusinessProfile } from '../api';
 import { useToast } from '../components/ToastContext';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function Business() {
   const [profile, setProfile] = useState<any>(null);
@@ -9,6 +10,7 @@ export default function Business() {
   const [editForm, setEditForm] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
+  const { t } = useLang();
 
   const [activeQuickAction, setActiveQuickAction] = useState<string | null>(null);
 
@@ -30,27 +32,27 @@ export default function Business() {
       });
       setProfile({ ...profile, ...updated });
       setIsEditModalOpen(false);
-      showToast('Business profile updated.', 'success');
+      showToast(t('biz.updated'), 'success');
     } catch (error: any) {
-      showToast(error?.response?.data?.detail || 'Failed to update profile.', 'error');
+      showToast(error?.response?.data?.detail || t('biz.failUpdate'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center">Loading business profile...</div>;
+    return <div className="p-8 flex items-center justify-center">{t('biz.loading')}</div>;
   }
 
   return (
     <div className="max-w-5xl mx-auto w-full flex flex-col gap-6 relative">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-primary">Business Profile</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">Manage your business registration details and contacts.</p>
+          <h2 className="font-headline-lg text-headline-lg text-primary">{t('biz.title')}</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">{t('biz.subtitle')}</p>
         </div>
         <button onClick={() => setIsEditModalOpen(true)} className="neu-btn px-6 py-3 rounded-full flex items-center gap-2 text-primary font-label-lg text-label-lg hover:bg-primary/5 transition-colors">
-          <span className="material-symbols-outlined">edit</span> Edit Profile
+          <span className="material-symbols-outlined">edit</span> {t('biz.edit')}
         </button>
       </div>
 
@@ -67,11 +69,11 @@ export default function Business() {
           </div>
           
           <div className="neu-flat rounded-2xl p-6">
-             <h4 className="font-label-lg text-label-lg text-on-surface mb-4 border-b border-surface-dim pb-2">Quick Actions</h4>
+             <h4 className="font-label-lg text-label-lg text-on-surface mb-4 border-b border-surface-dim pb-2">{t('biz.quickActions')}</h4>
              <ul className="flex flex-col gap-2">
-               <li><button onClick={() => setActiveQuickAction('branch')} className="w-full text-left neu-btn px-4 py-2 rounded-lg text-primary flex items-center gap-2 hover:bg-primary/5"><span className="material-symbols-outlined text-sm">add_circle</span> Add Branch</button></li>
-               <li><button onClick={() => setActiveQuickAction('rep')} className="w-full text-left neu-btn px-4 py-2 rounded-lg text-primary flex items-center gap-2 hover:bg-primary/5"><span className="material-symbols-outlined text-sm">group_add</span> Add Representative</button></li>
-               <li><button onClick={() => setActiveQuickAction('doc')} className="w-full text-left neu-btn px-4 py-2 rounded-lg text-primary flex items-center gap-2 hover:bg-primary/5"><span className="material-symbols-outlined text-sm">cloud_upload</span> Upload Documents</button></li>
+               <li><button onClick={() => setActiveQuickAction('branch')} className="w-full text-left neu-btn px-4 py-2 rounded-lg text-primary flex items-center gap-2 hover:bg-primary/5"><span className="material-symbols-outlined text-sm">add_circle</span> {t('biz.addBranch')}</button></li>
+               <li><button onClick={() => setActiveQuickAction('rep')} className="w-full text-left neu-btn px-4 py-2 rounded-lg text-primary flex items-center gap-2 hover:bg-primary/5"><span className="material-symbols-outlined text-sm">group_add</span> {t('biz.addRep')}</button></li>
+               <li><button onClick={() => setActiveQuickAction('doc')} className="w-full text-left neu-btn px-4 py-2 rounded-lg text-primary flex items-center gap-2 hover:bg-primary/5"><span className="material-symbols-outlined text-sm">cloud_upload</span> {t('biz.uploadDocs')}</button></li>
              </ul>
           </div>
         </div>
@@ -79,20 +81,20 @@ export default function Business() {
         <div className="md:col-span-2 flex flex-col gap-6">
           <div className="neu-flat rounded-2xl p-8">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 mb-6">
-              <span className="material-symbols-outlined text-primary">info</span> Registration Details
+              <span className="material-symbols-outlined text-primary">info</span> {t('biz.regDetails')}
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="neu-recessed p-4 rounded-xl flex flex-col">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Registration No.</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('biz.regNo')}</span>
                 <span className="font-code text-code text-on-surface font-semibold">{profile.registration_no}</span>
               </div>
               <div className="neu-recessed p-4 rounded-xl flex flex-col">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Tax ID / GSTIN</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('biz.taxId')}</span>
                 <span className="font-code text-code text-on-surface font-semibold">{profile.tax_id}</span>
               </div>
               <div className="neu-recessed p-4 rounded-xl flex flex-col sm:col-span-2">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Registered Address</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('biz.address')}</span>
                 <span className="font-body-lg text-body-lg text-on-surface">{profile.address}</span>
               </div>
             </div>
@@ -100,20 +102,20 @@ export default function Business() {
 
           <div className="neu-flat rounded-2xl p-8">
             <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 mb-6">
-              <span className="material-symbols-outlined text-primary">contacts</span> Contact Information
+              <span className="material-symbols-outlined text-primary">contacts</span> {t('biz.contact')}
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="neu-recessed p-4 rounded-xl flex flex-col">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Primary Owner</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('biz.owner')}</span>
                 <span className="font-body-lg text-body-lg text-on-surface">{profile.owner}</span>
               </div>
               <div className="neu-recessed p-4 rounded-xl flex flex-col">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Phone Number</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('biz.phone')}</span>
                 <span className="font-body-lg text-body-lg text-on-surface">{profile.phone}</span>
               </div>
               <div className="neu-recessed p-4 rounded-xl flex flex-col sm:col-span-2">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Email Address</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{t('biz.email')}</span>
                 <span className="font-body-lg text-body-lg text-on-surface">{profile.email}</span>
               </div>
             </div>
@@ -126,7 +128,7 @@ export default function Business() {
         <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="neu-flat rounded-2xl w-full max-w-xl p-6 bg-background max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="font-headline-sm text-headline-sm text-on-surface">Edit Business Profile</h2>
+              <h2 className="font-headline-sm text-headline-sm text-on-surface">{t('biz.editTitle')}</h2>
               <button onClick={() => setIsEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center text-on-surface-variant neu-btn rounded-full">
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -134,7 +136,7 @@ export default function Business() {
             
             <div className="flex flex-col gap-4">
               <div>
-                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Business Name</label>
+                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('biz.businessName')}</label>
                 <input 
                   type="text" 
                   value={editForm?.business_name} 
@@ -144,7 +146,7 @@ export default function Business() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Phone Number</label>
+                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('biz.phone')}</label>
                   <input 
                     type="text" 
                     value={editForm?.phone} 
@@ -153,7 +155,7 @@ export default function Business() {
                   />
                 </div>
                 <div>
-                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Email Address</label>
+                  <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('biz.email')}</label>
                   <input 
                     type="email" 
                     value={editForm?.email} 
@@ -163,7 +165,7 @@ export default function Business() {
                 </div>
               </div>
               <div>
-                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Registered Address</label>
+                <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">{t('biz.address')}</label>
                 <textarea 
                   value={editForm?.address} 
                   onChange={(e) => setEditForm({...editForm, address: e.target.value})}
@@ -171,8 +173,8 @@ export default function Business() {
                 />
               </div>
               <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setIsEditModalOpen(false)} className="px-6 py-2 neu-btn text-on-surface-variant font-label-lg rounded-lg">Cancel</button>
-                <button onClick={handleSave} disabled={saving} className="px-6 py-2 neu-flat text-primary !bg-primary !text-on-primary font-label-lg font-bold rounded-lg shadow-[4px_4px_8px_#dce1eb,-4px_-4px_8px_#ffffff]">{saving ? 'Saving...' : 'Save Changes'}</button>
+                <button onClick={() => setIsEditModalOpen(false)} className="px-6 py-2 neu-btn text-on-surface-variant font-label-lg rounded-lg">{t('common.cancel')}</button>
+                <button onClick={handleSave} disabled={saving} className="px-6 py-2 neu-flat text-primary !bg-primary !text-on-primary font-label-lg font-bold rounded-lg shadow-[4px_4px_8px_#dce1eb,-4px_-4px_8px_#ffffff]">{saving ? t('common.saving') : t('common.saveChanges')}</button>
               </div>
             </div>
           </div>
@@ -184,40 +186,40 @@ export default function Business() {
         <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="neu-flat rounded-2xl w-full max-w-md p-6 bg-background animate-slide-up">
             <h2 className="font-headline-sm text-headline-sm text-on-surface mb-4">
-              {activeQuickAction === 'branch' && 'Add Branch'}
-              {activeQuickAction === 'rep' && 'Add Representative'}
-              {activeQuickAction === 'doc' && 'Upload Documents'}
+              {activeQuickAction === 'branch' && t('biz.addBranch')}
+              {activeQuickAction === 'rep' && t('biz.addRep')}
+              {activeQuickAction === 'doc' && t('biz.uploadDocs')}
             </h2>
             <div className="flex flex-col gap-4">
               {activeQuickAction === 'doc' ? (
                 <div className="border-2 border-dashed border-primary/30 rounded-xl p-8 text-center bg-primary/5 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors">
                   <span className="material-symbols-outlined text-4xl text-primary mb-2">upload_file</span>
-                  <span className="font-label-md text-label-md text-on-surface">Click to browse or drag & drop</span>
-                  <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">PDF, JPG, PNG (Max 5MB)</span>
+                  <span className="font-label-md text-label-md text-on-surface">{t('biz.clickBrowse')}</span>
+                  <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t('biz.maxSize')}</span>
                 </div>
               ) : (
                 <div>
                   <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">
-                    {activeQuickAction === 'branch' ? 'Branch Name' : 'Representative Name'}
+                    {activeQuickAction === 'branch' ? t('biz.branchName') : t('biz.repName')}
                   </label>
                   <input 
                     type="text" 
-                    placeholder="Enter name..."
+                    placeholder={t('biz.enterName')}
                     className="w-full neu-input-container rounded-lg px-4 py-2 text-body-md outline-none focus:ring-2 focus:ring-primary/20" 
                   />
                 </div>
               )}
               
               <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setActiveQuickAction(null)} className="px-6 py-2 neu-btn text-on-surface-variant font-label-lg rounded-lg">Cancel</button>
+                <button onClick={() => setActiveQuickAction(null)} className="px-6 py-2 neu-btn text-on-surface-variant font-label-lg rounded-lg">{t('common.cancel')}</button>
                 <button 
                   onClick={() => {
-                    showToast('Action completed successfully.', 'success');
+                    showToast(t('biz.done'), 'success');
                     setActiveQuickAction(null);
                   }} 
                   className="px-6 py-2 neu-flat text-primary !bg-primary !text-on-primary font-label-lg font-bold rounded-lg shadow-[4px_4px_8px_#dce1eb,-4px_-4px_8px_#ffffff]"
                 >
-                  Confirm
+                  {t('common.confirm')}
                 </button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
+import { useLang } from '../i18n/LanguageContext';
 
 interface User {
   id: string;
@@ -17,6 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { t } = useLang();
   const [user, setUser] = useState<User | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -47,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <span className="material-symbols-outlined text-primary text-4xl animate-spin">sync</span>
-        <p className="mt-4 font-label-lg text-on-surface-variant">Loading session...</p>
+        <p className="mt-4 font-label-lg text-on-surface-variant">{t('common.loadingSession')}</p>
       </div>
     );
   }

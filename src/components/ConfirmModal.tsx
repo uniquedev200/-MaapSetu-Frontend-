@@ -1,4 +1,6 @@
 
+import { useLang } from '../i18n/LanguageContext';
+
 interface ConfirmModalProps {
   isOpen: boolean;
   title: string;
@@ -14,12 +16,13 @@ export default function ConfirmModal({
   isOpen,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   isDestructive = false,
   onConfirm,
   onCancel
 }: ConfirmModalProps) {
+  const { t } = useLang();
   if (!isOpen) return null;
 
   return (
@@ -49,7 +52,7 @@ export default function ConfirmModal({
             onClick={onCancel}
             className="neu-btn px-6 py-2.5 font-label-lg text-label-lg text-on-surface-variant"
           >
-            {cancelLabel}
+            {cancelLabel ?? t('common.cancel')}
           </button>
           <button 
             onClick={onConfirm}
@@ -59,7 +62,7 @@ export default function ConfirmModal({
                 : '!bg-primary !text-on-primary'
             }`}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('common.confirm')}
           </button>
         </div>
       </div>

@@ -3,12 +3,15 @@ import { Link } from 'react-router-dom';
 import { fetchDashboardMetrics, fetchApplications } from '../api';
 import { useAuth } from '../components/AuthContext';
 import EmptyState from '../components/EmptyState';
+import StatusBadge from '../components/StatusBadge';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<any>(null);
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { t } = useLang();
   const isBusiness = user?.role === 'BUSINESS';
 
   useEffect(() => {
@@ -20,7 +23,7 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center">Loading dashboard...</div>;
+    return <div className="p-8 flex items-center justify-center">{t('dash.loading')}</div>;
   }
 
   return (
@@ -28,13 +31,13 @@ export default function Dashboard() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface">Dashboard</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">Overview of your business verification activities.</p>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface">{t('dash.title')}</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">{t('dash.subtitle')}</p>
         </div>
         {isBusiness && (
           <Link to="/applications" className="neu-btn !bg-primary !text-on-primary px-6 py-2.5 rounded-lg font-label-lg text-label-lg flex items-center gap-2 hover:opacity-90">
             <span className="material-symbols-outlined">add_circle</span>
-            New Application
+            {t('dash.newApplication')}
           </Link>
         )}
       </div>
@@ -51,7 +54,7 @@ export default function Dashboard() {
               <span className="material-symbols-outlined text-[16px]">trending_up</span> 12%
             </span>
           </div>
-          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1">Registered Instruments</p>
+          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1">{t('dash.registeredInstruments')}</p>
           <h3 className="font-headline-md text-headline-md text-on-surface">{metrics?.registered_instruments}</h3>
         </div>
         
@@ -62,10 +65,10 @@ export default function Dashboard() {
               <span className="material-symbols-outlined">description</span>
             </div>
             <span className="text-primary font-label-sm text-label-sm flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-full">
-              <span className="material-symbols-outlined text-[16px]">sync</span> Active
+              <span className="material-symbols-outlined text-[16px]">sync</span> {t('dash.active')}
             </span>
           </div>
-          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1">Active Applications</p>
+          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1">{t('dash.activeApplications')}</p>
           <h3 className="font-headline-md text-headline-md text-on-surface">{metrics?.active_applications}</h3>
         </div>
         
@@ -76,7 +79,7 @@ export default function Dashboard() {
               <span className="material-symbols-outlined">verified</span>
             </div>
           </div>
-          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1">Valid Certificates</p>
+          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1">{t('dash.validCertificates')}</p>
           <h3 className="font-headline-md text-headline-md text-on-surface">{metrics?.valid_certificates}</h3>
         </div>
         
@@ -88,7 +91,7 @@ export default function Dashboard() {
               <span className="material-symbols-outlined">warning</span>
             </div>
           </div>
-          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1 relative z-10">Expiring Soon</p>
+          <p className="font-label-lg text-label-lg text-on-surface-variant mb-1 relative z-10">{t('dash.expiringSoon')}</p>
           <h3 className="font-headline-md text-headline-md text-tertiary relative z-10">{metrics?.expiring_soon}</h3>
         </div>
       </div>
@@ -96,8 +99,8 @@ export default function Dashboard() {
       {/* Recent Applications Table Section */}
       <div className="neu-flat p-padding-card mt-8">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-headline-sm text-headline-sm text-on-surface">Recent Applications</h3>
-          <Link to="/applications" className="text-primary font-label-lg text-label-lg hover:underline decoration-primary underline-offset-4">View All</Link>
+          <h3 className="font-headline-sm text-headline-sm text-on-surface">{t('dash.recentApplications')}</h3>
+          <Link to="/applications" className="text-primary font-label-lg text-label-lg hover:underline decoration-primary underline-offset-4">{t('dash.viewAll')}</Link>
         </div>
         
         {applications.length > 0 ? (
@@ -105,10 +108,10 @@ export default function Dashboard() {
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="text-on-surface-variant font-label-sm text-label-sm border-b border-surface-container-high">
-                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider">App ID</th>
-                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider">Type</th>
-                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider">Status</th>
-                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider text-right">Action</th>
+                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider">{t('dash.appId')}</th>
+                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider">{t('dash.type')}</th>
+                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider">{t('dash.status')}</th>
+                  <th className="pb-3 px-4 font-semibold uppercase tracking-wider text-right">{t('dash.action')}</th>
                 </tr>
               </thead>
               <tbody className="text-body-md text-on-surface">
@@ -134,30 +137,13 @@ export default function Dashboard() {
         ) : (
           <EmptyState 
             icon="description" 
-            title="No recent applications" 
-            description="You haven't submitted any applications recently."
-            actionLabel="New Application"
+            title={t('dash.noRecentTitle')} 
+            description={t('dash.noRecentDesc')}
+            actionLabel={t('dash.newApplication')}
             actionTo="/applications"
           />
         )}
       </div>
     </div>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case 'DRAFT':
-      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-surface-variant/10 text-on-surface-variant border border-surface-variant/20">DRAFT</span>;
-    case 'SUBMITTED':
-      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-primary-fixed/40 text-primary border border-primary/20">SUBMITTED</span>;
-    case 'SCHEDULED':
-      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-tertiary-fixed/50 text-tertiary border border-tertiary/20">SCHEDULED</span>;
-    case 'IN_PROGRESS':
-      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-primary-container/20 text-on-primary-fixed border border-primary/20">IN_PROGRESS</span>;
-    case 'APPROVED':
-      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-green-100 text-green-800 border border-green-200">APPROVED</span>;
-    default:
-      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-gray-100 text-gray-800 border border-gray-200">{status}</span>;
-  }
 }

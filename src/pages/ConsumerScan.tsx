@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import jsQR from 'jsqr';
+import { useLang } from '../i18n/LanguageContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 function extractCertId(raw: string): string {
   const trimmed = raw.trim();
@@ -14,6 +16,7 @@ function extractCertId(raw: string): string {
 
 export default function ConsumerScan() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -77,7 +80,7 @@ export default function ConsumerScan() {
     setCameraError('');
     handledRef.current = false;
     if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraError('Camera is not available in this browser/context. Use “upload a QR image” or type the certificate ID instead (camera needs HTTPS/localhost).');
+      setCameraError(t('scan.noCameraMedia'));
       return;
     }
     setScanning(true);
@@ -101,10 +104,10 @@ export default function ConsumerScan() {
       const name = err?.name || '';
       setCameraError(
         name === 'NotAllowedError' || name === 'PermissionDeniedError'
-          ? 'Camera permission was denied. Allow access, or use upload / manual entry.'
+          ? t('scan.permissionDenied')
           : name === 'NotFoundError' || name === 'DevicesNotFoundError'
-            ? 'No camera found on this device. Use upload or manual entry.'
-            : 'Could not start the camera (this may need HTTPS/localhost). Use “upload a QR image” or type the certificate ID instead.'
+            ? t('scan.noCamera')
+            : t('scan.couldNotStart')
       );
     } finally {
       setScanning(false);
@@ -130,16 +133,16 @@ export default function ConsumerScan() {
         const certId = extractCertId(code.data);
         navigate(certId ? `/verify/${certId}` : '/verify/not-found');
       } else {
-        setCameraError('No QR code found in that image. Try a clearer photo or type the certificate ID manually.');
+        setCameraError(t('scan.noQrInImage'));
       }
     };
-    img.onerror = () => { setBusy(false); setCameraError('Could not read that image file.'); };
+    img.onerror = () => { setBusy(false); setCameraError(t('scan.couldNotRead')); };
     img.src = URL.createObjectURL(file);
   };
 
   const handleVerify = () => {
     const certId = extractCertId(manualId || pastedCode);
-    if (!certId) { setCameraError('Enter a certificate ID (e.g. CERT-2026-XXXX) or paste a scanned link.'); return; }
+    if (!certId) { setCameraError(t('scan.enterIdError')); return; }
     setCameraError('');
     navigate(`/verify/${certId}`);
   };
@@ -160,10 +163,11 @@ export default function ConsumerScan() {
           <div className="w-11 h-11 rounded-full neu-recessed bg-surface-container-low flex items-center justify-center">
             <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
           </div>
-          <div>
-            <h1 className="font-headline-sm text-[16px] font-bold text-primary leading-tight">Scan a Certificate QR</h1>
-            <p className="font-label-sm text-label-sm text-on-surface-variant">Point your camera at the QR on any certificate, or upload its photo</p>
+          <div className="flex-1">
+            <h1 className="font-headline-sm text-[16px] font-bold text-primary leading-tight">{t('scan.title')}</h1>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">{t('scan.subtitle')}</p>
           </div>
+          <LanguageSwitcher />
         </div>
 
         {/* Camera viewfinder */}
@@ -173,7 +177,7 @@ export default function ConsumerScan() {
             {!cameraOn && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/90">
                 <span className="material-symbols-outlined text-5xl text-white/70" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
-                <p className="font-label-sm text-label-sm opacity-80">Camera is off — tap “Enable Camera Scan” below, or upload a photo.</p>
+                <p className="font-label-sm text-label-sm opacity-80">{t('scan.cameraOff')}</p>
               </div>
             )}
             {cameraOn && (
@@ -182,7 +186,7 @@ export default function ConsumerScan() {
                 <div className="absolute top-4 inset-x-0 flex justify-center pointer-events-none">
                   <span className="px-3 py-1 rounded-full bg-black/50 text-white/90 text-[11px] font-semibold tracking-wide flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-sm animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
-                    Looking for QR … it verifies automatically when found
+                    {t('scan.lookingForQr')}
                   </span>
                 </div>
               </>
@@ -194,13 +198,13 @@ export default function ConsumerScan() {
             {!cameraOn && (
               <button onClick={startCamera} disabled={scanning} className="flex-1 py-3 rounded-xl font-label-lg text-label-lg text-primary font-bold neu-flat transition-all active:scale-95 hover:bg-primary-fixed/20 flex items-center justify-center gap-2 disabled:opacity-70">
                 <span className="material-symbols-outlined">{scanning ? 'sync' : 'photo_camera'}</span>
-                {scanning ? 'Starting camera...' : (cameraError ? 'Try Camera Again' : 'Enable Camera Scan')}
+                {scanning ? t('scan.startingCamera') : (cameraError ? t('scan.tryAgain') : t('scan.enableCamera'))}
               </button>
             )}
             <label className="flex-1 py-3 rounded-xl font-label-lg text-label-lg text-secondary font-bold neu-flat transition-all active:scale-95 hover:bg-primary-fixed/20 flex items-center justify-center gap-2 cursor-pointer">
               <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && decodeImageFile(e.target.files[0])} disabled={busy} />
               <span className="material-symbols-outlined">{busy ? 'sync' : 'image'}</span>
-              Upload QR Image
+              {t('scan.uploadImage')}
             </label>
           </div>
 
@@ -214,13 +218,13 @@ export default function ConsumerScan() {
 
         {/* Manual / pasted code */}
         <div className="neu-flat rounded-2xl p-6 mb-5">
-          <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-3">or enter the certificate ID</p>
+          <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-3">{t('scan.orEnterId')}</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="neu-input-container rounded-lg flex items-center px-4 h-12 flex-1">
               <span className="material-symbols-outlined text-on-surface-variant mr-2 text-[18px]">pin</span>
               <input
                 className="neu-input w-full text-on-surface font-body-md placeholder-outline h-full border-none focus:ring-0 outline-none"
-                placeholder="e.g. CERT-2026-7JZP (or paste a verify link)"
+                placeholder={t('scan.inputPlaceholder')}
                 value={manualId}
                 onChange={(e) => setManualId(e.target.value)}
                 onPaste={handlePaste}
@@ -228,21 +232,21 @@ export default function ConsumerScan() {
               />
             </div>
             <button onClick={handleVerify} className="py-3 px-6 rounded-xl font-label-lg text-label-lg text-primary font-bold neu-flat transition-all active:scale-95 hover:bg-primary-fixed/20 flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">verified</span> Verify
+              <span className="material-symbols-outlined text-[18px]">verified</span> {t('scan.verify')}
             </button>
           </div>
           {pastedCode && (
-            <p className="font-label-sm text-label-sm text-primary mt-2">Detected paste: {pastedCode.split('/').pop()} — verifying…</p>
+            <p className="font-label-sm text-label-sm text-primary mt-2">{t('scan.pasteDetected', { value: pastedCode.split('/').pop() ?? '' })}</p>
           )}
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="font-label-sm text-label-sm text-on-surface-variant">Prefer a shortcut?</p>
-          <Link to="/login" className="font-label-sm text-label-sm text-primary font-bold hover:underline">Sign in as officer / business →</Link>
+          <p className="font-label-sm text-label-sm text-on-surface-variant">{t('scan.shortcut')}</p>
+          <Link to="/login" className="font-label-sm text-label-sm text-primary font-bold hover:underline">{t('scan.signInAs')}</Link>
         </div>
 
         <p className="text-center font-label-sm text-label-sm text-on-surface-variant mt-8">
-          Verification results are checked against the tamper-evident certificate ledger (Legal Metrology Act, 2009).
+          {t('scan.footer')}
         </p>
       </div>
     </div>

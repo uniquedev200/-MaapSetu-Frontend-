@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { fetchAuditLogs } from '../api';
 import EmptyState from '../components/EmptyState';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function AuditLogs() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLang();
 
   useEffect(() => {
     fetchAuditLogs().then(data => {
@@ -14,15 +16,15 @@ export default function AuditLogs() {
   }, []);
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center">Loading audit logs...</div>;
+    return <div className="p-8 flex items-center justify-center">{t('audit.loading')}</div>;
   }
 
   return (
     <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-primary">System Audit Logs</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">Review detailed activity records and historical events.</p>
+          <h2 className="font-headline-lg text-headline-lg text-primary">{t('audit.title')}</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">{t('audit.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => {
@@ -35,7 +37,7 @@ export default function AuditLogs() {
             link.click();
             link.remove();
           }} className="neu-btn px-4 py-2 flex items-center gap-2 text-on-surface-variant font-label-sm">
-            <span className="material-symbols-outlined text-[18px]">download</span> Export CSV
+            <span className="material-symbols-outlined text-[18px]">download</span> {t('audit.exportCsv')}
           </button>
         </div>
       </div>
@@ -45,10 +47,10 @@ export default function AuditLogs() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-surface-dim/50">
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Timestamp</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">User</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Action</th>
-                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">Details</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('audit.colTimestamp')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('audit.colUser')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('audit.colAction')}</th>
+                <th className="py-4 px-6 font-label-lg text-label-lg text-on-surface-variant font-semibold">{t('audit.colDetails')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-dim/30">
@@ -70,8 +72,8 @@ export default function AuditLogs() {
                   <td colSpan={4} className="p-0">
                     <EmptyState 
                       icon="history_toggle_off" 
-                      title="No Audit Logs" 
-                      description="System activity history is currently empty."
+                      title={t('audit.emptyTitle')} 
+                      description={t('audit.emptyDescription')}
                     />
                   </td>
                 </tr>

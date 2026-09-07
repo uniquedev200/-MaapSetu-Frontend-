@@ -4,6 +4,8 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
+import { useLang } from '../i18n/LanguageContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -16,6 +18,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { user, logout } = useAuth();
+  const { t } = useLang();
   
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -46,8 +49,8 @@ export default function Layout() {
               <span className="material-symbols-outlined text-primary">verified</span>
             </div>
             <div>
-              <h1 className="font-headline-sm text-[16px] font-bold text-primary dark:text-inverse-primary leading-tight">Metrology Verification</h1>
-              <p className="font-label-sm text-label-sm text-on-surface-variant">Online System</p>
+              <h1 className="font-headline-sm text-[16px] font-bold text-primary dark:text-inverse-primary leading-tight">{t('nav.brand')}</h1>
+              <p className="font-label-sm text-label-sm text-on-surface-variant">{t('nav.brandSub')}</p>
             </div>
           </Link>
           <button className="md:hidden text-on-surface-variant p-2" onClick={() => setIsMobileMenuOpen(false)}>
@@ -60,37 +63,37 @@ export default function Layout() {
             onClick={() => navigate('/applications')}
             className="w-full neu-btn py-3 px-4 flex items-center justify-center gap-2 text-primary font-label-lg font-bold"
           >
-            <span className="material-symbols-outlined">add</span> Quick Action
+            <span className="material-symbols-outlined">add</span> {t('nav.quickAction')}
           </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-4 flex flex-col gap-2">
-          <NavItem to="/dashboard" icon="dashboard" label="Dashboard" />
+          <NavItem to="/dashboard" icon="dashboard" label={t('nav.dashboard')} />
           
           {/* Business Users only */}
           {user?.role === 'BUSINESS' && (
-            <NavItem to="/business" icon="business_center" label="My Business" />
+            <NavItem to="/business" icon="business_center" label={t('nav.myBusiness')} />
           )}
           
-          <NavItem to="/instruments" icon="architecture" label={user?.role === 'BUSINESS' ? "My Instruments" : "Instruments"} />
-          <NavItem to="/applications" icon="description" label={user?.role === 'BUSINESS' ? "My Applications" : "Applications"} />
+          <NavItem to="/instruments" icon="architecture" label={user?.role === 'BUSINESS' ? t('nav.myInstruments') : t('nav.instruments')} />
+          <NavItem to="/applications" icon="description" label={user?.role === 'BUSINESS' ? t('nav.myApplications') : t('nav.applications')} />
           
           {/* Inspections: Officers + Admin only (Business is never a participant) */}
           {user?.role !== 'BUSINESS' && (
-            <NavItem to="/inspections" icon="assignment_turned_in" label={user?.role === 'LMO' || user?.role === 'GATC' ? "My Inspections" : "Inspections"} />
+            <NavItem to="/inspections" icon="assignment_turned_in" label={user?.role === 'LMO' || user?.role === 'GATC' ? t('nav.myInspections') : t('nav.inspections')} />
           )}
           
-          <NavItem to="/certificates" icon="verified" label="Certificates" />
+          <NavItem to="/certificates" icon="verified" label={t('nav.certificates')} />
           
           {/* System Administrators only */}
           {user?.role === 'ADMIN' && (
-            <NavItem to="/logs" icon="history" label="Audit Logs" />
+            <NavItem to="/logs" icon="history" label={t('nav.auditLogs')} />
           )}
         </nav>
 
         <div className="px-4 mt-auto flex flex-col gap-2 border-t border-surface-dim pt-4 shadow-none">
-          <NavItem to="/settings" icon="settings" label="Settings" />
-          <NavItem to="/help" icon="help" label="Help" />
+          <NavItem to="/settings" icon="settings" label={t('nav.settings')} />
+          <NavItem to="/help" icon="help" label={t('nav.help')} />
         </div>
       </aside>
 
@@ -110,12 +113,12 @@ export default function Layout() {
               <input 
                 onKeyDown={(e) => { 
                   if(e.key === 'Enter') {
-                    showToast('Searching for: ' + e.currentTarget.value, 'info');
+                    showToast(t('nav.searchingFor', { value: e.currentTarget.value }), 'info');
                     e.currentTarget.value = '';
                   } 
                 }}
                 className="neu-input-container pl-10 pr-4 py-2 w-64 text-body-md font-body-md placeholder-on-surface-variant/70 text-on-surface bg-transparent rounded-full border-none outline-none focus:ring-0 focus:shadow-[inset_6px_6px_12px_#dce1eb,inset_-6px_-6px_12px_#ffffff]" 
-                placeholder="Search Metrology..." 
+                placeholder={t('nav.searchPlaceholder')} 
                 type="text" 
               />
             </div>
@@ -134,14 +137,14 @@ export default function Layout() {
               
               {isNotificationsOpen && (
                 <div className="absolute right-0 mt-3 w-80 neu-flat rounded-xl p-4 z-50 flex flex-col gap-3">
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface border-b border-surface-dim pb-2">Notifications</h3>
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface border-b border-surface-dim pb-2">{t('notif.title')}</h3>
                   <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
                     <div className="flex flex-col gap-1 p-2 rounded-lg opacity-70">
-                      <span className="font-body-md text-body-md text-on-surface-variant text-sm">No new notifications yet.</span>
-                      <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">Updates from your verifications will appear here.</span>
+                      <span className="font-body-md text-body-md text-on-surface-variant text-sm">{t('notif.empty')}</span>
+                      <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">{t('notif.emptySub')}</span>
                     </div>
                   </div>
-                  <button onClick={() => { showToast('All notifications marked as read.', 'success'); setIsNotificationsOpen(false); }} className="text-primary font-label-sm text-center pt-2 border-t border-surface-dim hover:underline">Mark all as read</button>
+                  <button onClick={() => { showToast(t('common.markedAllRead'), 'success'); setIsNotificationsOpen(false); }} className="text-primary font-label-sm text-center pt-2 border-t border-surface-dim hover:underline">{t('common.markAllRead')}</button>
                 </div>
               )}
             </div>
@@ -152,6 +155,8 @@ export default function Layout() {
             >
               <span className="material-symbols-outlined">settings</span>
             </button>
+
+            <LanguageSwitcher />
             
             {/* User Profile */}
             <div className="relative" ref={profileRef}>
@@ -165,22 +170,22 @@ export default function Layout() {
               {isProfileOpen && (
                 <div className="absolute right-0 mt-3 w-48 neu-flat rounded-xl py-2 z-50 flex flex-col">
                   <div className="px-4 py-2 border-b border-surface-dim mb-1">
-                    <p className="font-label-sm text-label-sm font-bold text-on-surface truncate">{user?.name || 'User Name'}</p>
+                    <p className="font-label-sm text-label-sm font-bold text-on-surface truncate">{user?.name || t('profile.userName')}</p>
                     <p className="font-body-md text-[11px] text-on-surface-variant truncate">{user?.email || 'user@email.com'}</p>
                   </div>
                   <Link to="/business" className="px-4 py-2 hover:bg-surface-container-low text-on-surface font-label-sm flex items-center gap-2" onClick={() => setIsProfileOpen(false)}>
-                    <span className="material-symbols-outlined text-[18px]">business_center</span> My Business
+                    <span className="material-symbols-outlined text-[18px]">business_center</span> {t('nav.myBusiness')}
                   </Link>
                   <Link to="/settings" className="px-4 py-2 hover:bg-surface-container-low text-on-surface font-label-sm flex items-center gap-2" onClick={() => setIsProfileOpen(false)}>
-                    <span className="material-symbols-outlined text-[18px]">settings</span> Settings
+                    <span className="material-symbols-outlined text-[18px]">settings</span> {t('nav.settings')}
                   </Link>
                   <div className="border-t border-surface-dim my-1"></div>
                   <button onClick={() => { 
                     logout();
-                    showToast('Logged out successfully.', 'info'); 
+                    showToast(t('profile.loggedOut'), 'info'); 
                     setIsProfileOpen(false); 
                   }} className="px-4 py-2 hover:bg-error-container/20 text-error font-label-sm flex items-center gap-2 w-full text-left">
-                    <span className="material-symbols-outlined text-[18px]">logout</span> Log out
+                    <span className="material-symbols-outlined text-[18px]">logout</span> {t('profile.logout')}
                   </button>
                 </div>
               )}

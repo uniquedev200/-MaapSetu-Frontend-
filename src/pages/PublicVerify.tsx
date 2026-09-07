@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { publicCertificateVerify, resolveFileUrl } from '../api';
+import { useLang } from '../i18n/LanguageContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const EMPTY = {
   certificate: null as any,
@@ -12,6 +14,7 @@ const EMPTY = {
 export default function PublicVerify() {
   const { certId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLang();
   const [data, setData] = useState<any>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [scanInput, setScanInput] = useState('');
@@ -26,7 +29,7 @@ export default function PublicVerify() {
         if (status === 404) {
           setData({ ...EMPTY, notFound: true, networkError: '' });
         } else {
-          setData({ ...EMPTY, notFound: false, networkError: err?.response?.data?.detail || err?.message || 'Could not reach the verification registry.' });
+          setData({ ...EMPTY, notFound: false, networkError: err?.response?.data?.detail || err?.message || '' });
         }
       })
       .finally(() => setLoading(false));
@@ -54,26 +57,27 @@ export default function PublicVerify() {
           <div className="w-11 h-11 rounded-full neu-recessed bg-surface-container-low flex items-center justify-center">
             <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
           </div>
-          <div>
-            <h1 className="font-headline-sm text-[16px] font-bold text-primary leading-tight">Legal Metrology Certificate Verification</h1>
-            <p className="font-label-sm text-label-sm text-on-surface-variant">Official tamper-evident registry · scan the QR on any certificate</p>
+          <div className="flex-1">
+            <h1 className="font-headline-sm text-[16px] font-bold text-primary leading-tight">{t('pv.brand')}</h1>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">{t('pv.subtitle')}</p>
           </div>
+          <LanguageSwitcher />
         </div>
 
         {/* Hero status */}
         {loading ? (
           <div className="neu-flat rounded-2xl p-10 flex flex-col items-center gap-3">
             <span className="material-symbols-outlined text-4xl text-primary animate-spin">sync</span>
-            <p className="font-label-lg text-label-lg text-on-surface-variant">Checking the tamper-evident ledger...</p>
+            <p className="font-label-lg text-label-lg text-on-surface-variant">{t('pv.checking')}</p>
           </div>
         ) : data.notFound ? (
           <div className="neu-flat rounded-2xl p-10 text-center">
             <div className="h-16 w-16 rounded-full bg-error-container text-on-error-container flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-[32px]">question_mark</span>
             </div>
-            <h2 className="font-headline-sm text-headline-sm font-bold text-error mb-2">Certificate not recognised</h2>
+            <h2 className="font-headline-sm text-headline-sm font-bold text-error mb-2">{t('pv.notFound')}</h2>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              No record matches <span className="font-code">{certId}</span> in the registry. Re-scan the QR code or enter the certificate ID printed on the document.
+              {t('pv.notFoundMsg', { id: certId ?? '' })}
             </p>
           </div>
         ) : data.networkError ? (
@@ -81,9 +85,9 @@ export default function PublicVerify() {
             <div className="h-16 w-16 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-[32px]">link_off</span>
             </div>
-            <h2 className="font-headline-sm text-headline-sm font-bold text-error mb-2">Could not reach the registry</h2>
+            <h2 className="font-headline-sm text-headline-sm font-bold text-error mb-2">{t('pv.networkError')}</h2>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              {data.networkError}. Check your connection to <span className="font-code">192.168.1.6:8010</span> and try again.
+              {data.networkError} {t('pv.networkErrorMsg', { host: '192.168.1.6:8010' })}
             </p>
           </div>
         ) : authentic ? (
@@ -91,11 +95,11 @@ export default function PublicVerify() {
             <div className="w-16 h-16 rounded-full bg-white/15 flex items-center justify-center mx-auto">
               <span className="material-symbols-outlined text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
             </div>
-            <h2 className="font-headline-md text-headline-md font-bold tracking-widest mt-3">AUTHENTIC CERTIFICATE</h2>
-            <p className="font-body-md text-body-md mt-1 opacity-90">Blockchain record matches this certificate. It is genuine and current.</p>
+            <h2 className="font-headline-md text-headline-md font-bold tracking-widest mt-3">{t('pv.authentic')}</h2>
+            <p className="font-body-md text-body-md mt-1 opacity-90">{t('pv.authenticMsg')}</p>
             <div className="flex justify-center gap-3 mt-5">
-              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">VERIFIED</span>
-              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">CHAIN INTACT</span>
+              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">{t('pv.verifiedBadge')}</span>
+              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">{t('pv.chainIntact')}</span>
             </div>
           </div>
         ) : (
@@ -103,15 +107,15 @@ export default function PublicVerify() {
             <div className="w-16 h-16 rounded-full bg-white/15 flex items-center justify-center mx-auto">
               <span className="material-symbols-outlined text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>gpp_bad</span>
             </div>
-            <h2 className="font-headline-md text-headline-md font-bold tracking-widest mt-3">{tampered ? 'TAMPERED CERTIFICATE' : 'AUTHENTICATION FAILED'}</h2>
+            <h2 className="font-headline-md text-headline-md font-bold tracking-widest mt-3">{tampered ? t('pv.tampered') : t('pv.authFailed')}</h2>
             <p className="font-body-md text-body-md mt-1 opacity-90">
               {tampered
-                ? 'This record is flagged as a forged copy. Do not rely on it.'
-                : 'This certificate failed blockchain verification and must NOT be relied upon.'}
+                ? t('pv.tamperedMsg')
+                : t('pv.authFailedMsg')}
             </p>
             <div className="flex justify-center gap-3 mt-5">
-              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">REJECTED</span>
-              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">HASH MISMATCH</span>
+              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">{t('pv.rejectedBadge')}</span>
+              <span className="px-4 py-1.5 rounded-full bg-white/20 font-label-sm text-label-sm font-bold cursor-default">{t('pv.hashMismatch')}</span>
             </div>
           </div>
         )}
@@ -122,38 +126,36 @@ export default function PublicVerify() {
             <div className="neu-flat rounded-2xl p-6 mb-5">
               <div className="flex justify-between items-center mb-5">
                 <div>
-                  <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Certificate No.</p>
+                  <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">{t('pv.certNo')}</p>
                   <p className="font-code text-code text-on-surface font-bold">{cert.certificate_number}</p>
                 </div>
                 {tampered ? (
-                  <span className="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">TAMPERED COPY</span>
+                  <span className="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">{t('pv.tamperedCopy')}</span>
                 ) : (
-                  <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 font-label-sm text-label-sm font-bold">VERIFIED</span>
+                  <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 font-label-sm text-label-sm font-bold">{t('pv.verifiedBadge2')}</span>
                 )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-                <Detail label="Instrument" value={cert.instrument_name} />
-                <Detail label="Serial Number" value={cert.serial_number} code />
-                <Detail label="Registered Business" value={cert.business_name} />
-                <Detail label="Inspector" value={cert.inspector_name} />
-                <Detail label="Issued On" value={cert.issued_date} />
-                <Detail label="Valid Until" value={cert.valid_until} colored />
+                <Detail label={t('pv.instrument')} value={cert.instrument_name} />
+                <Detail label={t('pv.serialNumber')} value={cert.serial_number} code />
+                <Detail label={t('pv.registeredBusiness')} value={cert.business_name} />
+                <Detail label={t('pv.inspector')} value={cert.inspector_name} />
+                <Detail label={t('pv.issuedOn')} value={cert.issued_date} />
+                <Detail label={t('pv.validUntil')} value={cert.valid_until} colored />
               </div>
 
               {tampered ? (
                 <div className="flex gap-3 items-start mt-6 p-4 rounded-xl bg-error-container/40">
                   <span className="material-symbols-outlined text-error">warning</span>
                   <p className="font-body-md text-body-md text-on-surface">
-                    <b>Simulated forgery:</b> the PDF hash stored in this record differs from the hash anchored on the ledger at
-                    issuance time. A real tamper produces exactly this state.
+                    <b>{t('pv.simForgeryTitle')}</b> {t('pv.simForgeryMsg')}
                   </p>
                 </div>
               ) : (
                 <div className="flex gap-3 items-start mt-6 p-4 rounded-xl bg-surface-container-low">
                   <span className="material-symbols-outlined text-primary">lock</span>
                   <p className="font-body-md text-body-md text-on-surface">
-                    Authenticity is established by comparing the stored certificate hash against the hash anchored to the
-                    tamper-evident verification ledger at issuance.
+                    {t('pv.authNoteMsg')}
                   </p>
                 </div>
               )}
@@ -161,12 +163,12 @@ export default function PublicVerify() {
 
             {/* Blockchain anchoring */}
             <div className="neu-flat rounded-2xl p-6 mb-5">
-              <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-3">Blockchain Anchoring</p>
+              <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-3">{t('pv.blockchainAnchoring')}</p>
               <div className="neu-recessed rounded-xl p-4 font-code text-code text-on-surface-variant overflow-x-auto">
-                <p><span className="text-on-surface">block index:</span> {blockNo}</p>
-                <p><span className="text-on-surface">stored hash:</span> <span className={authentic ? 'text-green-700' : 'text-error'}>{auth.certificateHash || cert.certificate_hash || '-'}</span></p>
-                <p><span className="text-on-surface">anchored hash:</span> <span className={authentic ? 'text-green-700' : 'text-error'}>{auth.blockchainHash || '-'}</span></p>
-                <p><span className="text-on-surface">block hash:</span> {auth.blockHash || '-'}</p>
+                <p><span className="text-on-surface">{t('pv.blockIndex')}</span> {blockNo}</p>
+                <p><span className="text-on-surface">{t('pv.storedHash')}</span> <span className={authentic ? 'text-green-700' : 'text-error'}>{auth.certificateHash || cert.certificate_hash || '-'}</span></p>
+                <p><span className="text-on-surface">{t('pv.anchoredHash')}</span> <span className={authentic ? 'text-green-700' : 'text-error'}>{auth.blockchainHash || '-'}</span></p>
+                <p><span className="text-on-surface">{t('pv.blockHash')}</span> {auth.blockHash || '-'}</p>
               </div>
             </div>
 
@@ -174,12 +176,12 @@ export default function PublicVerify() {
             {qrUrl && (
               <div className="neu-flat rounded-2xl p-6 mb-5 flex flex-col sm:flex-row items-center gap-5">
                 <div className="neu-recessed p-4 rounded-xl bg-white">
-                  <img src={qrUrl} alt="Certificate QR" className="w-32 h-32 object-contain" />
+                  <img src={qrUrl} alt={t('pv.scanAnywhere')} className="w-32 h-32 object-contain" />
                 </div>
                 <div>
-                  <p className="font-headline-sm text-headline-sm font-semibold text-primary">Scan to verify anywhere</p>
+                  <p className="font-headline-sm text-headline-sm font-semibold text-primary">{t('pv.scanAnywhere')}</p>
                   <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-                    This QR is printed on the certificate. Anyone scanning it lands here and sees this exact authenticity result.
+                    {t('pv.scanAnywhereMsg')}
                   </p>
                 </div>
               </div>
@@ -187,13 +189,13 @@ export default function PublicVerify() {
 
             {/* Scan another */}
             <div className="neu-flat rounded-2xl p-6">
-              <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-3">Verify another certificate</p>
+              <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-3">{t('pv.verifyAnother')}</p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="neu-input-container rounded-lg flex items-center px-4 h-12 flex-1">
                   <span className="material-symbols-outlined text-on-surface-variant mr-2 text-[18px]">qr_code_scanner</span>
                   <input
                     className="neu-input w-full text-on-surface font-body-md placeholder-outline h-full border-none focus:ring-0 outline-none"
-                    placeholder="Certificate ID — e.g. CERT-2026-XXXX"
+                    placeholder={t('pv.inputPlaceholder')}
                     value={scanInput}
                     onChange={(e) => setScanInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleScan()}
@@ -203,7 +205,7 @@ export default function PublicVerify() {
                   onClick={handleScan}
                   className="py-3 px-6 rounded-xl font-label-lg text-label-lg text-primary font-bold neu-flat transition-all active:scale-95 flex items-center justify-center gap-2 hover:bg-primary-fixed/20"
                 >
-                  <span className="material-symbols-outlined text-[18px]">verified</span> Verify
+                  <span className="material-symbols-outlined text-[18px]">verified</span> {t('pv.verify')}
                 </button>
               </div>
               <Link
@@ -211,14 +213,14 @@ export default function PublicVerify() {
                 className="mt-3 w-full py-3 rounded-xl font-label-lg text-label-lg text-secondary font-bold neu-flat transition-all active:scale-95 hover:bg-primary-fixed/20 flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                Scan a QR with the camera instead
+                {t('pv.scanCamera')}
               </Link>
             </div>
           </>
         )}
 
         <p className="text-center font-label-sm text-label-sm text-on-surface-variant mt-8">
-          Issued under the provisions of the Legal Metrology Act, 2009 · dev environment
+          {t('pv.footer')} · {t('pv.devFooter')}
         </p>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import Layout from './components/Layout';
 import { useAuth } from './components/AuthContext';
+import { useLang } from './i18n/LanguageContext';
 
 // Lazy load the pages for better performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -23,14 +24,17 @@ const PublicVerify = lazy(() => import('./pages/PublicVerify'));
 const ConsumerScan = lazy(() => import('./pages/ConsumerScan'));
 
 // Loading fallback component
-const PageLoader = () => (
-  <div className="flex-1 flex items-center justify-center p-8 min-h-[50vh]">
-    <div className="flex flex-col items-center gap-4 text-primary opacity-70">
-      <span className="material-symbols-outlined text-4xl animate-spin" style={{ fontVariationSettings: "'FILL' 0" }}>sync</span>
-      <span className="font-label-lg text-label-lg font-bold">Loading module...</span>
+const PageLoader = () => {
+  const { t } = useLang();
+  return (
+    <div className="flex-1 flex items-center justify-center p-8 min-h-[50vh]">
+      <div className="flex flex-col items-center gap-4 text-primary opacity-70">
+        <span className="material-symbols-outlined text-4xl animate-spin" style={{ fontVariationSettings: "'FILL' 0" }}>sync</span>
+        <span className="font-label-lg text-label-lg font-bold">{t('common.loadingModule')}</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function ProtectedRoute({ children, allowedRoles }: { children: ReactNode, allowedRoles?: string[] }) {
   const { isAuthenticated, user } = useAuth();
