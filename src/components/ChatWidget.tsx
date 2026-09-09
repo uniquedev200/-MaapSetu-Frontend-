@@ -26,6 +26,9 @@ const WELCOME =
   'Welcome! I\u2019m your MaapSetu assistant. Ask me how to register an instrument, ' +
   'raise a verification application, change the app language, or check your certificates. ' +
   'I can even point to the right button on this screen.';
+  'Welcome! I\u2019m your MaapSetu assistant. Ask me how to register an instrument, ' +
+  'raise a verification application, change the app language, or check your certificates. ' +
+  'I can even point to the right button on this screen.';
 
 function matches(text: string, ...keys: string[]) {
   const lower = text.toLowerCase();
@@ -114,6 +117,7 @@ export default function ChatWidget({ userName }: { userName?: string }) {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([{ role: 'assistant', text: WELCOME, guide: null }]);
+  const [started, setStarted] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const listRef = useRef<HTMLDivElement>(null);
@@ -157,6 +161,7 @@ export default function ChatWidget({ userName }: { userName?: string }) {
   const send = async (raw?: string) => {
     const text = (raw ?? input).trim();
     if (!text || busy) return;
+    setStarted(true);
     setInput('');
     const history = messages.filter((m) => m.role === 'assistant' && m.text !== WELCOME).map((m) => ({ role: m.role, content: m.text }));
     const next: Msg[] = [...messages, { role: 'user', text }];
@@ -237,18 +242,20 @@ export default function ChatWidget({ userName }: { userName?: string }) {
           </div>
 
           <div className="border-t border-surface-dim p-3 flex flex-col gap-2">
-            <div className="flex flex-wrap gap-1.5">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  disabled={busy}
-                  className="neu-btn px-2.5 py-1 rounded-full text-primary font-label-sm text-label-sm disabled:opacity-50"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+            {!started && (
+              <div className="flex flex-wrap gap-1.5">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => send(s)}
+                    disabled={busy}
+                    className="neu-btn px-2.5 py-1 rounded-full text-primary font-label-sm text-label-sm disabled:opacity-50"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <div className="neu-input-container flex items-center gap-2 rounded-full px-3 py-2 flex-1">
                 <span className="material-symbols-outlined text-[18px] text-on-surface-variant">chat</span>

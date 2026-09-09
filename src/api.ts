@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { CACHEABLE_METHODS, cacheDeletePrefix, cacheGet, cachePut } from './api/httpCache';
 
 // The base URL can be injected via environment variables in production
 // E.g., inside .env file: VITE_API_BASE_URL=https://api.yourdomain.com/v1
@@ -53,14 +54,42 @@ api.interceptors.response.use(
   }
 );
 
+// Cache invalidation: any successful write invalidates the matching resource
+// prefix so the next GET re-fetches fresh data (offline cache stays truthful).
+api.interceptors.response.use(
+  (response) => {
+    const method = (response.config.method || 'get').toLowerCase();
+    const url = response.config.url || '';
+    if (!CACHEABLE_METHODS.includes(method.toUpperCase()) && response.status >= 200 && response.status < 300) {
+      const resource = url.split(/[/?#]/)[0] || '';
+      if (resource) cacheDeletePrefix(`/${resource}`);
+    }
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Read-through GET: hydrate from IndexedDB on network failure and warm the
+// cache on success. Falls back silently, so online behaviour never changes.
+async function cachedGet<T = any>(url: string): Promise<T> {
+  try {
+    const response = await api.get<T>(url);
+    cachePut(url, response.data);
+    return response.data;
+  } catch (error) {
+    const cached = await cacheGet<T>(url);
+    if (cached != null) return cached;
+    throw error;
+  }
+}
+
 /* =========================================
    API Resource Methods
    ========================================= */
 
 // Instruments
 export const fetchInstruments = async () => {
-  const response = await api.get('/instruments');
-  return response.data;
+  return cachedGet('/instruments');
 };
 
 export const createInstrument = async (data: any) => {
@@ -70,8 +99,7 @@ export const createInstrument = async (data: any) => {
 
 // Verification Applications
 export const fetchApplications = async () => {
-  const response = await api.get('/verification');
-  return response.data;
+  return cachedGet('/verification');
 };
 
 export const createVerification = async (data: any) => {
@@ -95,20 +123,57 @@ export const scheduleVerification = async (id: string, data: any) => {
 };
 
 export const fetchApplicationDetails = async (id: string) => {
-  const response = await api.get(`/verification/${id}`);
-  return response.data;
+  return cachedGet(`/verification/${id}`);
+};
+
+// Notifications
+export interface ApiNotification {
+  id: number;
+  title: string;
+  message: string;
+  type: string;
+  link: string | null;
+  payload: Record<string, unknown>;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface NotificationsFeed {
+  items: ApiNotification[];
+  total: number;
+  unread: number;
+}
+
+export const fetchNotifications = async (params?: { unread_only?: boolean; page_size?: number }): Promise<NotificationsFeed> => {
+  const query = new URLSearchParams();
+  if (params?.unread_only) query.set('unread_only', 'true');
+  if (params?.page_size) query.set('page_size', String(params.page_size));
+  const qs = query.toString();
+  const response = await api.get(`/notifications${qs ? `?${qs}` : ''}`);
+  return response.data.data;
+};
+
+export const fetchUnreadCount = async (): Promise<number> => {
+  const response = await api.get('/notifications/unread-count');
+  return response.data.data.count;
+};
+
+export const markNotificationRead = async (id: number): Promise<void> => {
+  await api.post(`/notifications/${id}/read`);
+};
+
+export const markAllNotificationsRead = async (): Promise<void> => {
+  await api.post('/notifications/read-all');
 };
 
 // Dashboard
 export const fetchDashboardMetrics = async () => {
-  const response = await api.get('/dashboard/metrics');
-  return response.data;
+  return cachedGet('/dashboard/metrics');
 };
 
 // Inspections
 export const fetchInspections = async () => {
-  const response = await api.get('/inspections');
-  return response.data;
+  return cachedGet('/inspections');
 };
 
 export const submitInspectionFindings = async (appId: string, data: any) => {
@@ -118,13 +183,11 @@ export const submitInspectionFindings = async (appId: string, data: any) => {
 
 // Certificates
 export const fetchCertificates = async () => {
-  const response = await api.get('/certificates');
-  return response.data;
+  return cachedGet('/certificates');
 };
 
 export const fetchCertificateDetails = async (id: string) => {
-  const response = await api.get(`/certificates/${id}`);
-  return response.data;
+  return cachedGet(`/certificates/${id}`);
 };
 
 export const verifyCertificate = async (id: string) => {
@@ -139,13 +202,11 @@ export const downloadCertificatePdf = async (id: string): Promise<Blob> => {
 
 // Audit & Administration
 export const fetchAuditLogs = async () => {
-  const response = await api.get('/audit-logs');
-  return response.data;
+  return cachedGet('/audit-logs');
 };
 
 export const fetchBusinessProfile = async () => {
-  const response = await api.get('/business/profile');
-  return response.data;
+  return cachedGet('/business/profile');
 };
 
 export const updateBusinessProfile = async (data: any) => {
@@ -154,8 +215,7 @@ export const updateBusinessProfile = async (data: any) => {
 };
 
 export const fetchSettings = async () => {
-  const response = await api.get('/settings');
-  return response.data;
+  return cachedGet('/settings');
 };
 
 export const updateSettings = async (data: any) => {

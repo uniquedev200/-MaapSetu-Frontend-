@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchSettings, updateSettings, changePassword } from '../api';
 import { useToast } from '../components/ToastContext';
 import { useLang } from '../i18n/LanguageContext';
+import { useTheme, type Theme } from '../i18n/ThemeContext';
 
 export default function Settings() {
   const [settings, setSettings] = useState<any>(null);
@@ -14,13 +15,18 @@ export default function Settings() {
   const [pwSaving, setPwSaving] = useState(false);
   const { showToast } = useToast();
   const { t } = useLang();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     fetchSettings().then(data => {
       setSettings(data);
       setLoading(false);
+      const savedTheme: Theme | undefined = data?.theme;
+      if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') {
+        setTheme(savedTheme);
+      }
     }).catch(() => setLoading(false));
-  }, []);
+  }, [setTheme]);
 
   const handleSave = async () => {
     if (!settings) return;
@@ -167,7 +173,11 @@ export default function Settings() {
                <select 
                  className="neu-input-container rounded-lg px-4 py-2 border-none outline-none font-body-md text-on-surface bg-transparent"
                  value={settings.theme}
-                 onChange={(e) => setSettings({...settings, theme: e.target.value})}
+                 onChange={(e) => {
+                   const next = e.target.value as Theme;
+                   setTheme(next);
+                   setSettings({...settings, theme: next});
+                 }}
                >
                  <option value="light">{t('settings.themeLight')}</option>
                  <option value="dark">{t('settings.themeDark')}</option>

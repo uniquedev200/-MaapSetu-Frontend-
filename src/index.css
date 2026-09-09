@@ -71,3 +71,143 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Dark theme
+   The design tokens are emitted as literal hex by Tailwind (see the JS config),
+   so dark mode remaps the exact utility set the app uses instead of relying on
+   --color-* variables. Toggled by the .dark class on <html> (ThemeContext).
+   --------------------------------------------------------------------------- */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #12141a;
+  color: #e7eaf1;
+}
+
+/* --- Text --- */
+.dark .text-on-surface { color: #e7eaf1; }
+.dark .text-on-surface-variant { color: #a7adbd; }
+.dark .text-on-error-container { color: #ffdad6; }
+.dark .text-on-primary-fixed { color: #dfe8ff; }
+.dark .text-on-primary-container { color: #cfe0ff; }
+.dark \!text-on-primary, .dark .text-on-primary { color: #f2f6ff; }
+.dark .text-outline { color: #9096a4; }
+.dark .text-primary { color: #8ab9ff; }
+.dark .text-secondary { color: #b8bdc9; }
+.dark .text-tertiary { color: #e0b27e; }
+.dark .text-tertiary-container { color: #e8b98a; }
+.dark .text-error { color: #ffb4ab; }
+.dark .text-inverse-primary { color: #a8c8ff; }
+.dark .text-on-surface-variant\/70 { color: rgba(167, 173, 189, 0.7); }
+
+/* --- Surfaces --- */
+.dark .bg-background { background-color: #12141a; }
+.dark .bg-background\/50 { background-color: rgba(18, 20, 26, 0.5); }
+.dark .bg-background\/80 { background-color: rgba(18, 20, 26, 0.8); }
+.dark .bg-background\/90 { background-color: rgba(18, 20, 26, 0.9); }
+.dark .bg-white { background-color: #1b1e26; }
+.dark .bg-surface { background-color: #14161c; }
+.dark .bg-surface-container { background-color: #1b1e26; }
+.dark .bg-surface-container-low { background-color: #171a21; }
+.dark .bg-surface-container-low\/50 { background-color: rgba(23, 26, 33, 0.5); }
+.dark .bg-surface-container-high { background-color: #21242d; }
+.dark .bg-surface-container-highest { background-color: #262a34; }
+.dark .bg-surface-dim { background-color: #2a2e38; }
+.dark .bg-surface-variant { background-color: #3d434f; }
+.dark .bg-surface-variant\/10 { background-color: rgba(61, 67, 79, 0.1); }
+
+/* --- Primary / accent tints with a blue tone that reads on dark --- */
+.dark .bg-primary { background-color: #1b4d8c; }
+.dark .bg-primary\/5 { background-color: rgba(138, 185, 255, 0.08); }
+.dark .bg-primary\/10 { background-color: rgba(138, 185, 255, 0.12); }
+.dark .bg-primary\/20 { background-color: rgba(138, 185, 255, 0.2); }
+.dark .bg-primary-container { background-color: #1e3a5f; }
+.dark .bg-primary-container\/20 { background-color: rgba(138, 185, 255, 0.2); }
+.dark .bg-primary-fixed { background-color: #20345a; }
+.dark .bg-primary-fixed\/20 { background-color: rgba(138, 185, 255, 0.2); }
+.dark .bg-primary-fixed\/40 { background-color: rgba(138, 185, 255, 0.4); }
+.dark .bg-secondary\/10 { background-color: rgba(184, 189, 201, 0.12); }
+.dark .bg-tertiary-container\/10 { background-color: rgba(224, 178, 126, 0.1); }
+.dark .bg-tertiary-container\/20 { background-color: rgba(224, 178, 126, 0.2); }
+.dark .bg-tertiary-fixed\/50 { background-color: rgba(224, 178, 126, 0.5); }
+.dark .bg-tertiary-fixed-dim\/20 { background-color: rgba(224, 178, 126, 0.2); }
+
+/* --- Error surfaces --- */
+.dark .bg-error { background-color: #b3261e; }
+.dark .bg-error\/90 { background-color: rgba(179, 38, 30, 0.9); }
+.dark .bg-error-container { background-color: #5b1a16; }
+.dark .bg-error-container\/20 { background-color: rgba(255, 180, 171, 0.2); }
+.dark .bg-error-container\/40 { background-color: rgba(255, 180, 171, 0.4); }
+.dark .bg-error-container\/50 { background-color: rgba(255, 180, 171, 0.5); }
+
+/* --- Borders --- */
+.dark .border-background { border-color: #12141a; }
+.dark .border-on-surface-variant\/50 { border-color: rgba(167, 173, 189, 0.5); }
+.dark .border-outline-variant { border-color: #3a3f4a; }
+.dark .border-primary { border-color: #8ab9ff; }
+.dark .border-primary\/5 { border-color: rgba(138, 185, 255, 0.08); }
+.dark .border-primary\/20 { border-color: rgba(138, 185, 255, 0.2); }
+.dark .border-primary\/30 { border-color: rgba(138, 185, 255, 0.3); }
+.dark .border-error { border-color: #ffb4ab; }
+.dark .border-error\/20 { border-color: rgba(255, 180, 171, 0.2); }
+.dark .border-error\/30 { border-color: rgba(255, 180, 171, 0.3); }
+.dark .border-tertiary\/20 { border-color: rgba(224, 178, 126, 0.2); }
+.dark .border-surface-container-high { border-color: #21242d; }
+.dark .border-surface-container-highest\/50 { border-color: rgba(38, 42, 52, 0.5); }
+.dark .border-surface-dim { border-color: #2a2e38; }
+.dark .border-surface-dim\/20 { border-color: rgba(42, 46, 56, 0.2); }
+.dark .border-surface-dim\/30 { border-color: rgba(42, 46, 56, 0.3); }
+.dark .border-surface-dim\/50 { border-color: rgba(42, 46, 56, 0.5); }
+.dark .border-surface-variant\/20 { border-color: rgba(61, 67, 79, 0.2); }
+.dark :where(.divide-surface-dim\/30 > :not(:last-child)) { border-color: #2a2e38; }
+
+/* --- Hover states --- */
+.dark .hover\:bg-surface-container:hover { background-color: #21242d; }
+.dark .hover\:bg-surface-container-low:hover { background-color: #1b1e26; }
+.dark .hover\:bg-surface-container-low\/50:hover { background-color: rgba(27, 30, 38, 0.5); }
+.dark .hover\:bg-primary\/5:hover { background-color: rgba(138, 185, 255, 0.08); }
+.dark .hover\:bg-primary\/10:hover { background-color: rgba(138, 185, 255, 0.12); }
+.dark .hover\:bg-primary\/20:hover { background-color: rgba(138, 185, 255, 0.2); }
+.dark .hover\:bg-primary-fixed\/20:hover { background-color: rgba(138, 185, 255, 0.2); }
+.dark .hover\:bg-primary-fixed\/30:hover { background-color: rgba(138, 185, 255, 0.3); }
+.dark .hover\:bg-error:hover { background-color: #b3261e; }
+.dark .hover\:bg-error-container\/20:hover { background-color: rgba(255, 180, 171, 0.2); }
+.dark .hover\:bg-error-container\/50:hover { background-color: rgba(255, 180, 171, 0.5); }
+.dark .hover\:text-primary:hover { color: #a8c8ff; }
+
+/* --- Form controls & placeholders --- */
+.dark .placeholder-on-surface-variant\/70::placeholder { color: rgba(167, 173, 189, 0.6); }
+.dark .focus\:ring-primary\/20:focus { --tw-ring-color: rgba(138, 185, 255, 0.25); }
+.dark .peer-checked\:bg-primary-container\/20:is(:where(.peer):checked ~ *) { background-color: rgba(138, 185, 255, 0.2); }
+
+/* --- Neomorphic shadows → dark equivalents --- */
+.dark .shadow-\[0_-4px_10px_rgba\(220\,225\,235\,0\.5\)\] {
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
+}
+.dark .shadow-\[4px_4px_8px_\#dce1eb\,-4px_-4px_8px_\#ffffff\] {
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.45), -4px -4px 8px #20242c;
+}
+.dark .shadow-\[6px_6px_12px_\#dce1eb\,-6px_-6px_12px_\#ffffff\] {
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.45), -6px -6px 12px #21252e;
+}
+.dark .hover\:shadow-\[8px_8px_16px_\#dce1eb\,-8px_-8px_16px_\#ffffff\]:hover {
+  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.5), -8px -8px 16px #20242c;
+}
+.dark .shadow-\[inset_2px_2px_5px_\#dce1eb\,inset_-2px_-2px_5px_\#ffffff\] {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -2px -2px 5px #22262f;
+}
+.dark .focus\:shadow-\[inset_6px_6px_12px_\#dce1eb\,inset_-6px_-6px_12px_\#ffffff\]:focus {
+  box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.6), inset -6px -6px 12px #22262f;
+}
+
+/* --- The handful of dark: prefixed utilities already in the codebase --- */
+.dark .dark\:bg-background:is(.dark *) { background-color: #12141a; }
+.dark .dark\:shadow-none:is(.dark *) { --tw-shadow: 0 0 #0000; box-shadow: none; }
+
+/* Onboarding assistant pulse stays visible on dark surfaces. */
+.dark .maapsetu-help-on {
+  outline-color: rgba(138, 185, 255, 0.9);
+}
+

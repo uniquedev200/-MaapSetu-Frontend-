@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
 import { useLang } from '../i18n/LanguageContext';
+import { cacheClear } from '../api/httpCache';
 
 interface User {
   id: string;
@@ -43,6 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('lm_session');
+    // Drop cached API responses so the next account never sees stale data.
+    cacheClear();
   };
 
   if (isInitializing) {

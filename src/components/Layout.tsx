@@ -4,6 +4,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
+import { useNotifications } from './NotificationContext';
 import { useLang } from '../i18n/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import ChatWidget from './ChatWidget';
@@ -20,6 +21,7 @@ export default function Layout() {
   const { showToast } = useToast();
   const { user, logout } = useAuth();
   const { t } = useLang();
+  const { items, unread, loading, refresh, markRead, markAllRead } = useNotifications();
   
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -36,6 +38,18 @@ export default function Layout() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const openNotifications = () => {
+    const next = !isNotificationsOpen;
+    setIsNotificationsOpen(next);
+    if (next) refresh();
+  };
+
+  const openNotification = (item: { id: number, link: string | null }) => {
+    if (item.link) navigate(item.link);
+    markRead(item.id);
+    setIsNotificationsOpen(false);
+  };
 
   return (
     <div className="bg-background text-on-surface min-h-screen flex antialiased">
@@ -130,23 +144,59 @@ export default function Layout() {
             {/* Notifications */}
             <div className="relative" ref={notifRef}>
               <button 
-                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                onClick={openNotifications}
                 className="w-10 h-10 neu-btn flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors rounded-full"
               >
                 <span className="material-symbols-outlined">notifications</span>
-                <span className="absolute top-0 right-0 w-3 h-3 bg-error rounded-full border-2 border-background"></span>
+                {unread > 0 && <span className="absolute top-0 right-0 w-3 h-3 bg-error rounded-full border-2 border-background"></span>}
               </button>
               
               {isNotificationsOpen && (
                 <div className="absolute right-0 mt-3 w-80 neu-flat rounded-xl p-4 z-50 flex flex-col gap-3">
                   <h3 className="font-headline-sm text-headline-sm text-on-surface border-b border-surface-dim pb-2">{t('notif.title')}</h3>
                   <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-                    <div className="flex flex-col gap-1 p-2 rounded-lg opacity-70">
-                      <span className="font-body-md text-body-md text-on-surface-variant text-sm">{t('notif.empty')}</span>
-                      <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">{t('notif.emptySub')}</span>
-                    </div>
+                    {loading && items.length === 0 ? (
+                      <div className="flex items-center justify-center p-4 text-on-surface-variant">
+                        <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                      </div>
+                    ) : items.length === 0 ? (
+                      <div className="flex flex-col gap-1 p-2 rounded-lg opacity-70">
+                        <span className="font-body-md text-body-md text-on-surface-variant text-sm">{t('notif.empty')}</span>
+                        <span className="font-label-sm text-label-sm text-on-surface-variant text-xs">{t('notif.emptySub')}</span>
+                      </div>
+                    ) : (
+                      items.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => openNotification(item)}
+                          className={cn(
+                            "flex flex-col gap-0.5 p-2 rounded-lg text-left transition-colors",
+                            item.is_read
+                              ? "opacity-70 hover:opacity-100"
+                              : "bg-primary/5 hover:bg-primary/10"
+                          )}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            {!item.is_read && <span className="w-2 h-2 shrink-0 rounded-full bg-primary"></span>}
+                            <span className="font-label-lg text-label-lg text-on-surface truncate">{item.title}</span>
+                          </span>
+                          <span className="font-body-md text-body-md text-on-surface-variant text-sm">{item.message}</span>
+                          <span className="font-label-sm text-label-sm text-on-surface-variant/70 text-xs mt-0.5">{new Date(item.created_at).toLocaleString()}</span>
+                        </button>
+                      ))
+                    )}
                   </div>
-                  <button onClick={() => { showToast(t('common.markedAllRead'), 'success'); setIsNotificationsOpen(false); }} className="text-primary font-label-sm text-center pt-2 border-t border-surface-dim hover:underline">{t('common.markAllRead')}</button>
+                  <button
+                    onClick={() => {
+                      markAllRead();
+                      showToast(t('common.markedAllRead'), 'success');
+                      setIsNotificationsOpen(false);
+                    }}
+                    disabled={unread === 0}
+                    className="text-primary font-label-sm text-center pt-2 border-t border-surface-dim hover:underline disabled:opacity-40 disabled:hover:no-underline"
+                  >
+                    {t('common.markAllRead')}
+                  </button>
                 </div>
               )}
             </div>
