@@ -212,6 +212,28 @@ export const restoreCertificate = async (id: string) => {
   return response.data;
 };
 
+// AI onboarding assistant (BUSINESS helper). The server proxies to Groq; the
+// key never leaves the backend. guide (optional) tells the widget which
+// on-screen control to highlight via its data-help attribute.
+export interface AssistantGuide {
+  target: string | null;
+  steps: string[];
+}
+
+export interface AssistantChatResponse {
+  reply: string;
+  guide: AssistantGuide | null;
+}
+
+export const assistantChat = async (data: {
+  message: string;
+  history: { role: 'user' | 'assistant'; content: string }[];
+  lang: string;
+}): Promise<AssistantChatResponse> => {
+  const response = await api.post('/assistant/chat', data);
+  return response.data;
+};
+
 // Google Maps navigation link for a premises location.
 export const mapsLink = (location: string, district?: string) => {
   const parts = [location, district].filter(Boolean);

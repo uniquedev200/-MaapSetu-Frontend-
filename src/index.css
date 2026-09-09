@@ -23,6 +23,27 @@
   }
 }
 
+/* Onboarding assistant: pulsing highlight ring around a data-help element the
+   chatbot has guided the user to (uses outline so it never clashes with the
+   neomorphic box-shadows on buttons/nav items). */
+@keyframes help-pulse {
+  0% {
+    outline-color: rgba(14, 71, 134, 0.85);
+  }
+  70% {
+    outline-color: rgba(14, 71, 134, 0.05);
+  }
+  100% {
+    outline-color: rgba(14, 71, 134, 0.85);
+  }
+}
+.maapsetu-help-on {
+  outline: 3px solid rgba(14, 71, 134, 0.85);
+  outline-offset: 4px;
+  border-radius: 12px;
+  animation: help-pulse 1.6s ease-in-out infinite;
+}
+
 /* Print: only render the marked .print-area, hide the app chrome
    (sidebar, topbar, action bars, breadcrumbs). */
 @media print {

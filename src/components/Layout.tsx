@@ -6,6 +6,7 @@ import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
 import { useLang } from '../i18n/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import ChatWidget from './ChatWidget';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -62,6 +63,7 @@ export default function Layout() {
           <button 
             onClick={() => navigate('/applications')}
             className="w-full neu-btn py-3 px-4 flex items-center justify-center gap-2 text-primary font-label-lg font-bold"
+            data-help="quick-action"
           >
             <span className="material-symbols-outlined">add</span> {t('nav.quickAction')}
           </button>
@@ -75,15 +77,15 @@ export default function Layout() {
             <NavItem to="/business" icon="business_center" label={t('nav.myBusiness')} />
           )}
           
-          <NavItem to="/instruments" icon="architecture" label={user?.role === 'BUSINESS' ? t('nav.myInstruments') : t('nav.instruments')} />
-          <NavItem to="/applications" icon="description" label={user?.role === 'BUSINESS' ? t('nav.myApplications') : t('nav.applications')} />
+          <NavItem to="/instruments" icon="architecture" label={user?.role === 'BUSINESS' ? t('nav.myInstruments') : t('nav.instruments')} helpId="nav-my-instruments" />
+          <NavItem to="/applications" icon="description" label={user?.role === 'BUSINESS' ? t('nav.myApplications') : t('nav.applications')} helpId="nav-my-applications" />
           
           {/* Inspections: Officers + Admin only (Business is never a participant) */}
           {user?.role !== 'BUSINESS' && (
             <NavItem to="/inspections" icon="assignment_turned_in" label={user?.role === 'LMO' || user?.role === 'GATC' ? t('nav.myInspections') : t('nav.inspections')} />
           )}
           
-          <NavItem to="/certificates" icon="verified" label={t('nav.certificates')} />
+          <NavItem to="/certificates" icon="verified" label={t('nav.certificates')} helpId="nav-certificates" />
           
           {/* System Administrators only */}
           {user?.role === 'ADMIN' && (
@@ -203,14 +205,18 @@ export default function Layout() {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/20 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
+
+      {/* AI onboarding assistant (BUSINESS users only) */}
+      {user?.role === 'BUSINESS' && <ChatWidget userName={user?.name} />}
     </div>
   );
 }
 
-function NavItem({ to, icon, label }: { to: string, icon: string, label: string }) {
+function NavItem({ to, icon, label, helpId }: { to: string, icon: string, label: string, helpId?: string }) {
   return (
     <NavLink
       to={to}
+      data-help={helpId}
       className={({ isActive }) => cn(
         "flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200",
         isActive 

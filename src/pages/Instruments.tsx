@@ -99,6 +99,7 @@ export default function Instruments() {
           <button 
             onClick={() => setIsAddModalOpen(true)}
             className="neu-btn px-6 py-3 flex items-center gap-2 text-primary font-label-lg font-bold bg-primary-fixed/20 hover:bg-primary-fixed/30"
+            data-help="add-instrument"
           >
             <span className="material-symbols-outlined">add_circle</span>
             {t('inst.addNew')}

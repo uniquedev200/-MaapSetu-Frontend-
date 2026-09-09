@@ -47,6 +47,7 @@ export default function LanguageSwitcher({ variant = 'dropdown' }: Props) {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1.5 neu-btn px-3 py-1.5 rounded-full text-on-surface-variant font-label-sm border-none cursor-pointer"
         title={t('lang.label')}
+        data-help="lang-switcher"
       >
         <span className="material-symbols-outlined text-[18px]">language</span>
         <span>{current.name}</span>

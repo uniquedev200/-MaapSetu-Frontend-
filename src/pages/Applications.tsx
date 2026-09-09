@@ -92,6 +92,7 @@ export default function Applications() {
                   <button
                     onClick={openModal}
                     className="neu-btn !bg-primary !text-on-primary px-6 py-2.5 rounded-lg font-label-lg text-label-lg flex items-center gap-2 hover:opacity-90"
+                    data-help="new-application"
                   >
                     <span className="material-symbols-outlined">add_circle</span>
                     {t('app.new')}
