@@ -97,6 +97,19 @@ export const createInstrument = async (data: any) => {
   return response.data;
 };
 
+// Archive (soft-delete) an instrument — chain-of-custody records are preserved.
+export const archiveInstrument = async (id: string) => {
+  const response = await api.delete(`/instruments/${id}`);
+  return response.data;
+};
+
+// Full instrument history: lifecycle timeline, health history, verification
+// summary (backend GET /instruments/{id}/passport, envelope payload).
+export const fetchInstrumentPassport = async (id: string) => {
+  const response = await api.get(`/instruments/${id}/passport`);
+  return response.data.data;
+};
+
 // Verification Applications
 export const fetchApplications = async () => {
   return cachedGet('/verification');
